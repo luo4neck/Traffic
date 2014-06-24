@@ -21,18 +21,21 @@ int main(int argc, char *argv[])
 
 	//while(1)
 	{
-		// broadcast the end..
+		// broadcast and recv the ends..
 		int *car_back = new int[nps];
+		int *car_send = new int[nps];
+		
 		int my_back = car.back();
 		printf("%d, %d\n", myid, my_back);
 
-		car_back[myid] = car.back(); 
+		//car_back[myid] = car.back(); 
+		car_send[myid] = car.back(); 
 		
-		//MPI_Bcast(car_back, 1, MPI_INT, myid, comm);
-		MPI_Allgather(&my_back, sizeof(int), MPI_INT, car_back, sizeof(int)*nps, MPI_INT, comm);
+		//Here should using allgather because each car have to send its location to all other cars, then recv location of all other cars..
+		//MPI_Allgather(&my_back, sizeof(int), MPI_INT, car_back, sizeof(int)*nps, MPI_INT, comm);
+		MPI_Allgather(car_send, 1, MPI_INT, car_back, nps, MPI_INT, comm);
 		
 		printf("i am %d, i have %d, %d, %d \n", myid, car_back[0], car_back[1], car_back[2]);
-		// recive the end..
 		
 		
 		// find the smallest distance from previous car..
@@ -46,7 +49,7 @@ int main(int argc, char *argv[])
 				smallest[1] = dis; 
 			}
 		}
-		delete car_back;
+		//delete car_back;
 		
 		// go or stop
 	
