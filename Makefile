@@ -5,7 +5,7 @@ main.o: main.cc car.h
 	mpic++ -c main.cc -Wall -o main.o
 
 test: all 
-	mpirun -n 3 ./main
+	mpirun -n 20 ./main
 
 clean:
 	rm *.o main
