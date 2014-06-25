@@ -9,7 +9,7 @@ class CAR
 	private:
 	int drct; // direction going..
 	int x; // location of the Head of the car..
-	//int y; // location of the Head of the car..
+	int y; // location of the Head of the car..
 	const int length;
 	int speed; // distance to move in 1 timestep..
 	public:
@@ -17,6 +17,7 @@ class CAR
 	CAR(int myid): length(3)
 	{
 		x = myid * 10+5;
+		y = 0;
 		drct = EAST;
 		speed = 1;
 	}
@@ -34,8 +35,8 @@ class CAR
 		else if (distance > 5) multi = 3;
 		else multi = 1;
 
-		if(drct == NORTH) x = x + Speed() * multi;
-		else if(drct == SOUTH) x = x - Speed() * multi; 
+		if(drct == NORTH) y = y + Speed() * multi;
+		else if(drct == SOUTH) y = y - Speed() * multi; 
 		else if(drct == WEST ) x = x - Speed() * multi;
 		else x = x + Speed() * multi; // east 
 	}
@@ -49,9 +50,9 @@ class CAR
 	const int Back() 
 	// position of the end of the car..
 	{
-		if(drct == NORTH) return (x+length);
-		else if(drct == SOUTH) return (x+length);
-		else if(drct == WEST ) return (x+length);
+		if(drct == NORTH) return (y - length);
+		else if(drct == SOUTH) return ( y + length);
+		else if(drct == WEST ) return (x + length);
 		else return (x - length);
 	}
 	
