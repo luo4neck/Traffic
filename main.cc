@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 	CAR car(myid);	
 	
 	int k=0; // k is just a stop condition..
-	while(k<1000)
+	while(k<250)
 	{
 	k++;
 		// broadcast and recv the ends..
@@ -35,9 +35,9 @@ int main(int argc, char *argv[])
 		// go or stop
 		//if ( car.Smallest(nps, car_back) >= 2 ) // at least 2 meters from the previous car..
 		if ( car.Head() < 1000 && car.Smallest(nps, car_back) >= 2 ) // test if all cars stop at some condition.. 
-		car.Forward();
+		car.Forward( car.Smallest(nps, car_back) );
 		
-		if( myid == 1 ) printf("i am %d, at %d \n", myid, car.Head() );
+		if( myid == 0 ) printf("i am %d, time %d, at %d \n", myid, k, car.Head() );
 		
 	}
 
