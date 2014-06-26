@@ -29,16 +29,16 @@ class CAR
 	{
 		// cars will have different speed when the distance to previous car is different..
 		// base speed is 1 meter/sec, multi will make it faster when distance is long..
-		// Randomization is added..
 		
-		int multi=0, slowdown=0;
+		// multi is used to achive high speed..
+		// slowdown is used to randomly slowdown the speed..
+		int multi=0, slowdown=0; 
 		if (random > 0.5) slowdown = 1;
 
 		if (distance > 50) multi = 10 - slowdown; // 30m/sec = 36km/h..
 		else if (distance > 20) multi = 5 - slowdown; // 15m/sec = 18km/h..
 		else if (distance > 5) multi = 3 - slowdown; // 3m/sec = 10.8km/h..
 		else multi = 1; // 1m/sec = 3.6km/h..
-		printf("%d\n", slowdown);
 
 		if(drct == NORTH) y = y + Speed() * multi;
 		else if(drct == SOUTH) y = y - Speed() * multi; 
@@ -79,4 +79,20 @@ class CAR
 		}
 		return smallest;
 	}
+
+	void Periodic()
+	// This function only support one-dimension periodic condition..
+	{
+		
+		//if(drct == NORTH) y = dis; 
+		//else if(drct == SOUTH) y = dis;  
+		//else if(drct == WEST ) x = dis;  
+		x = 1 + length;// east  
+	}
 };
+
+
+
+
+
+
