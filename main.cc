@@ -14,7 +14,8 @@ int main(int argc, char *argv[])
 	int nps, myid;
 	MPI_Comm_size(comm, &nps);
 	MPI_Comm_rank(comm, &myid);
-
+	srand48(time(NULL) + myid);
+	
 	printf("No.%d in %d\n", myid, nps);
 	CAR car(myid);	
 	
@@ -33,9 +34,10 @@ int main(int argc, char *argv[])
 		delete car_back;
 		
 		// go or stop
+		double random = drand48();
 		//if ( car.Smallest(nps, car_back) >= 2 ) // at least 2 meters from the previous car..
 		if ( car.Head() < 1000 && car.Smallest(nps, car_back) >= 2 ) // test if all cars stop at some condition.. 
-		car.Forward( car.Smallest(nps, car_back) );
+		car.Forward( car.Smallest(nps, car_back), random);
 		
 		if( myid == 0 ) printf("i am %d, time %d, at %d \n", myid, k, car.Head() );
 		
