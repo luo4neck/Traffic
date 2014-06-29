@@ -1,15 +1,12 @@
-all: main.o periodic.o
+all: main.o 
 	mpic++ main.o -Wall -o main
-	mpic++ periodic.o -Wall -o periodic
 
-main.o: main.cc car.h
+main.o: main.cc _car.h
 	mpic++ -c main.cc -Wall -o main.o
 
-periodic.o: periodic.cc car.h
-	mpic++ -c periodic.cc -Wall -o periodic.o
-
 test: all 
-	mpirun -n 20 ./periodic
+#	mpirun -n 20 ./main
+	./main
 
 clean:
-	rm *.o main periodic plot.dat
+	rm *.o main

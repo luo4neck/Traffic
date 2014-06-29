@@ -1,14 +1,17 @@
 #include<stdlib.h>
 #include<mpi.h>
 #include<stdio.h>
-#include "car.h"
+#include "_car.h"
 #define comm MPI_COMM_WORLD
 
 using namespace std;
 
+const int ncar = 20;
+const int time_max = 20;
+
 int main(int argc, char *argv[])
 {
-	MPI_Init(&argc, &argv);
+	/*MPI_Init(&argc, &argv);
 	// MPI_Status stat;
 	
 	int nps, myid;
@@ -18,20 +21,33 @@ int main(int argc, char *argv[])
 	
 	printf("No.%d in %d\n", myid, nps);
 	CAR car(myid);	
+	*/
 	
-	int k=0; // k is just a stop condition..
-	while(k<250)
+	CAR* list = NULL;
+	list = Car_construct(list, ncar, EAST);
+	Car_print(list);
+	
+	Car_forward(list);
+	Car_print(list);
+	
+	int time_k=0; // k is just a stop condition..
+	while(time_k < time_max)
 	{
-	k++;
-		// broadcast and recv the ends..
-		int *car_back = new int[nps];
-		int my_back = car.Back();
+	time_k++;
+		
+	Car_forward(list);
+	Car_print(list);
+
+		
+		/* broadcast and recv the ends..
+		//int *car_back = new int[nps];
+		//int my_back = car.Back();
 		//printf("%d, %d\n", myid, my_back);
 
 		//Here should using allgather because each car have to send its location to all other cars, then recv location of all other cars..
-		MPI_Allgather(&my_back, 1, MPI_INT, car_back, 1, MPI_INT, comm);
+		//MPI_Allgather(&my_back, 1, MPI_INT, car_back, 1, MPI_INT, comm);
 	
-		delete car_back;
+		//delete car_back;
 		
 		// go or stop
 		double random = drand48();
@@ -40,9 +56,9 @@ int main(int argc, char *argv[])
 		car.Forward( car.Smallest(nps, car_back), random);
 		
 		if( myid == 0 ) printf("i am %d, time %d, at %d \n", myid, k, car.Head() );
-		
+		*/	
 	}
 
-	MPI_Finalize();
+	//MPI_Finalize();
 	return 0;
 }

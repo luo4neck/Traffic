@@ -90,9 +90,3 @@ class CAR
 		x = 1 + length;// east  
 	}
 };
-
-
-
-
-
-
