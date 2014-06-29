@@ -7,7 +7,7 @@
 using namespace std;
 
 const int ncar = 20;
-const int time_max = 200;
+const int time_max = 10;
 
 int main(int argc, char *argv[])
 {
@@ -22,18 +22,16 @@ int main(int argc, char *argv[])
 	Car_print(list_west);
 	
 	
+	srand48(time(NULL));
 	int time_i=0; // time_i is just a stop condition..
 	while(time_i < time_max)
 	{
 	time_i++;
 		
-		Car_forward_NE(list_east);
-		Car_forward_SW(list_west);
+		Car_forward_NE(list_east, lrand48()); // lrand48() is the seed..
+		Car_forward_SW(list_west, lrand48()); // lrand48() is the seed..
 		
-		printf("East: ");
-		Car_print(list_east);
-		
-		printf("West: ");
+		//Car_print(list_east);
 		Car_print(list_west);
 
 		printf("\n");

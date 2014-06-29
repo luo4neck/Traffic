@@ -18,9 +18,10 @@ typedef struct CAR_struct
 	int x; // location of the head of the car..
 	int y; // location of the head of the car..
 	int length;
-} CAR;
+} 	CAR;
 
 CAR* Car_new(int x, int DRCT)
+// malloc memory space of the car..
 {
 	CAR* c = (CAR*) malloc (sizeof(CAR));
 	c->next = NULL;
@@ -30,10 +31,10 @@ CAR* Car_new(int x, int DRCT)
 	return c;
 }
 
-void Car_forward_NE(CAR* start)
+void Car_forward_NE(CAR* start, int seed)
 // move function to north or east..
 {
-	srand48(time(NULL));
+	srand48(seed);
 	while( start!=NULL )
 	{
 		int slowdown = 0, multi = 0; 
@@ -57,10 +58,10 @@ void Car_forward_NE(CAR* start)
 	}
 }
 
-void Car_forward_SW(CAR* start)
+void Car_forward_SW(CAR* start, int seed)
 // move function to west or south..
 {
-	srand48(time(NULL));
+	srand48(seed);
 	int dis = 100;
 	while( start!=NULL )
 	{
@@ -106,7 +107,16 @@ CAR* Car_construct(CAR* start, int n, int DRCT)
 }
 
 void Car_print(CAR* start)
+// print all the location of cars' head..
 {
+	if (start != NULL)
+	{
+		if ( start->drct == NORTH ) printf("North: ");
+		else if ( start->drct == SOUTH ) printf("South: ");
+		else if ( start->drct == WEST ) printf("West: ");
+		else printf("East: ");
+	}
+	
 	while (start!=NULL)
 	{
 		printf("%d  ", start->x);
@@ -116,6 +126,7 @@ void Car_print(CAR* start)
 }
 
 void Car_insert(CAR* start, int X, int DRCT)
+// delete a car into the list which is at location X..
 {
 	bool check = 1;
 	while(start!=NULL && check)
@@ -133,6 +144,7 @@ void Car_insert(CAR* start, int X, int DRCT)
 }
 
 void Car_delete(CAR* start, int X)
+// delete a car from the list which is at location X..
 {
 	bool check = 1;
 	while(start!=NULL && check)
@@ -142,11 +154,6 @@ void Car_delete(CAR* start, int X)
 			start->next = start->next->next;
 			check = 0;
 		}
-		else 
-		{
-			start = start->next;
-	printf("%d, fine\n", start->x);
-		}
-	printf("haha fine\n");
+		else start = start->next;
 	}
 }
