@@ -8,7 +8,7 @@
 using namespace std;
 
 const int base_speed = 1;
-const int base_length = 1;
+const int base_length = 3;
 
 typedef struct CAR_struct
 {
@@ -30,19 +30,19 @@ CAR* Car_new(int x, int DRCT)
 	return c;
 }
 
-void Car_forward(CAR* start)
+void Car_forward_NE(CAR* start)
+// move function to north or east..
 {
-	srand(time(NULL));
-	int multi = 0; 
+	srand48(time(NULL));
 	while( start!=NULL )
 	{
-		int slowdown = 0;
+		int slowdown = 0, multi = 0; 
 		double random = drand48();
 		if (random > 0.5) slowdown = 1;
 
 		int dis=0;
 		if(start->next == NULL) dis = 100; // no cars in front..
-		else dis = start->next->x - start->x;
+		else dis = start->next->x - start->x - start->next->length;
 		
 		if (dis > 50) multi = 10 - slowdown;
 		else if (dis > 20) multi = 5 - slowdown;
@@ -50,10 +50,35 @@ void Car_forward(CAR* start)
 		else multi = 1;
 
 		if( start->drct == NORTH) start->y = start->y + base_speed * multi;
-		else if( start->drct == SOUTH) start->y = start->y - base_speed * multi;
-		else if( start->drct == WEST) start->x = start->x - base_speed * multi;
 		else start->x = start->x + base_speed * multi; // east..
 		
+		//printf("%d \n", start->x);
+		start = start->next;// goto next car..
+	}
+}
+
+void Car_forward_SW(CAR* start)
+// move function to west or south..
+{
+	srand48(time(NULL));
+	int dis = 100;
+	while( start!=NULL )
+	{
+		int slowdown = 0, multi = 0; 
+		double random = drand48();
+		if (random > 0.5) slowdown = 1;
+
+		if (dis > 50) multi = 10 - slowdown;
+		else if (dis > 20) multi = 5 - slowdown;
+		else if (dis > 5) multi = 3 - slowdown;
+		else multi = 1;
+
+		if( start->drct == SOUTH) start->y = start->y - base_speed * multi;
+		else start->x = start->x - base_speed * multi; // west..
+	
+		if(start->next != NULL)
+		dis = start->next->x - start->x - start->length;
+
 		//printf("%d \n", start->x);
 		start = start->next;// goto next car..
 	}
