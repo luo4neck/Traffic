@@ -10,6 +10,9 @@ using namespace std;
 const int base_speed = 1;
 const int base_length = 3;
 
+int Dis_signal_NE(int x, int *sig, int num);
+int Dis_signal_SW(int x, int *sig, int num);
+
 typedef struct CAR_struct
 {
 	struct CAR_struct* next;
@@ -31,34 +34,65 @@ CAR* Car_new(int x, int DRCT)
 	return c;
 }
 
-void Car_forward_NE(CAR* start, int seed)
+int Dis_signal_NE(int x, const int *sig, const int num)
+// x is the current location of a car, *signal is the location information of singal lights..
+{
+	int i=0, dis = 0;
+	bool check=1;
+	//printf("fine, %d, %d, %d\n", sig[0], sig[1], sig[2]);
+	while(check && i<num)
+	{
+		dis = sig[i] - x;
+		if ( dis>0 && dis<10) return dis;
+		i++;
+	}
+	return 60;
+}
+int Dis_signal_SW(int x, const int *sig, const int num)
+// x is the current location of a car, *signal is the location information of singal lights..
+{	
+	bool check=1;
+	int dis=0, i=num-1;//????
+	//printf("fine, %d, %d, %d\n", sig[0], sig[1], sig[2]);
+	while(check && i>=0)
+	{
+		dis = x - sig[i];
+		if ( dis>0 && dis<10) return dis; 
+		i--;
+	}
+	return 60;
+}
+
+void Car_forward_NE(CAR* start, int seed, const bool Red, const int *sig, const int num)
 // move function to north or east..
 {
 	srand48(seed);
 	while( start!=NULL )
 	{
 		int slowdown = 0, multi = 0; 
-		double random = drand48();
-		if (random > 0.5) slowdown = 1;
+		if (drand48() > 0.5) slowdown = 1;
 
 		int dis=0;
 		if(start->next == NULL) dis = 100; // no cars in front..
 		else dis = start->next->x - start->x - start->next->length;
-		
+	
+		dis = min(Dis_signal_NE(start->x, sig, num), dis);
+		// dis is very important which show the distance to the front car or red light.. 
+
 		if (dis > 50) multi = 10 - slowdown;
 		else if (dis > 20) multi = 5 - slowdown;
 		else if (dis > 5) multi = 3 - slowdown;
-		else multi = 1;
-
+		else if (dis > 1) multi = 1; // dis=2 or dis=3, move 1m forward.. 
+		else multi = 0; // dis = 1, stop..
+		
 		if( start->drct == NORTH) start->y = start->y + base_speed * multi;
 		else start->x = start->x + base_speed * multi; // east..
-		
-		//printf("%d \n", start->x);
+	
 		start = start->next;// goto next car..
 	}
 }
 
-void Car_forward_SW(CAR* start, int seed)
+void Car_forward_SW(CAR* start, int seed, const bool Red, const int *sig, const int num)
 // move function to west or south..
 {
 	srand48(seed);
@@ -66,13 +100,15 @@ void Car_forward_SW(CAR* start, int seed)
 	while( start!=NULL )
 	{
 		int slowdown = 0, multi = 0; 
-		double random = drand48();
-		if (random > 0.5) slowdown = 1;
+		if (drand48() > 0.5) slowdown = 1;
+		
+		dis = min(Dis_signal_SW(start->x, sig, num), dis);
 
 		if (dis > 50) multi = 10 - slowdown;
 		else if (dis > 20) multi = 5 - slowdown;
 		else if (dis > 5) multi = 3 - slowdown;
-		else multi = 1;
+		else if (dis > 1) multi = 1; // dis=2 or dis=3, move 1m forward.. 
+		else multi = 0; // dis = 1, stop..
 
 		if( start->drct == SOUTH) start->y = start->y - base_speed * multi;
 		else start->x = start->x - base_speed * multi; // west..
@@ -80,7 +116,6 @@ void Car_forward_SW(CAR* start, int seed)
 		if(start->next != NULL)
 		dis = start->next->x - start->x - start->length;
 
-		//printf("%d \n", start->x);
 		start = start->next;// goto next car..
 	}
 }
