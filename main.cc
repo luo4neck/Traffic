@@ -8,7 +8,7 @@
 using namespace std;
 
 const int ncar = 10;
-const int time_max = 30;
+const int time_max = 60;
 
 int main(int argc, char *argv[])
 {
@@ -35,18 +35,17 @@ int main(int argc, char *argv[])
 	{
 	time_i++;
 		
+		if (time_i >= 55) Red = 0;
+		printf("Sec %d\n", time_i);
+		
 		Car_forward_NE(list_east, lrand48(), Red, Signal_x, Signal_Number);
 		// lrand48() is the seed..
 		Car_forward_SW(list_west, lrand48(), Red, Signal_x, Signal_Number);
 		// lrand48() is the seed..
 		Car_print(list_east);
 		Car_print(list_west);
-		
 		printf("\n");
 	}
-	//Car_print(list_east);
-	//Car_print(list_west);
 
-	//MPI_Finalize();
 	return 0;
 }
