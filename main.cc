@@ -1,9 +1,9 @@
 #include<stdlib.h>
-#include<fstream>
 #include<mpi.h>
 #include<stdio.h>
-#include "_car.h"
-#include "map.h"
+#include "_car.hpp" // all Car_** and Dis_** functions are in this file..
+#include "map.hpp" 
+#include "plotshow.hpp" // all Plot_** functions are in this file..
 #define comm MPI_COMM_WORLD
 
 using namespace std;
@@ -29,14 +29,7 @@ int main(int argc, char *argv[])
 	Signal_x[1] = 150;
 	Signal_x[2] = 300;
 
-// show..
-    int **plot = new int*[time_max];
-    for(int i=0; i<time_max; ++i)
-    {
-        plot[i] = new int[ncar+1];
-        plot[i][0] = i;
-    }
-// show..
+    int **plot = Plot_new(time_max, ncar);
 
 	srand48(time(NULL));
 	int time_i=0; // time_i is just a stop condition..
@@ -53,42 +46,12 @@ int main(int argc, char *argv[])
 		// lrand48() is the seed..
 		Car_print(list_east);
 		Car_print(list_west);
-	    
-// show..
-        CAR* start = list_east;
-        for(int i=1; i<=ncar; ++i)
-        {
-            plot[time_i-1][i] = start->x;
-            if (start->next != NULL) start = start->next;
-        }
-// show..
+		
+		Plot_write(time_i, ncar, plot, list_east);
     }
     
-// show..
-    ofstream file("plot.dat");
-    for(int i=0; i<time_max; ++i)
-    {
-        for(int j=0; j<=ncar; ++j)
-        {
-            file<<plot[i][j]<<", ";
-        }
-        file<<endl;
-    }
-    file.close();
-
-    for(int i=0; i<time_max; ++i) delete[] plot[i];
-    delete[] plot;
-   
-    FILE *gp = popen("gnuplot -persist", "w");;
-    if(gp == NULL) 
-    {
-        printf("Cannot plot the data!\n");
-        exit(0);
-    }
-    fprintf(gp, "plot 'plot.dat' u 1:2 w points, 'plot.dat' u 1:3 w points, 'plot.dat' u 1:4 w points, 'plot.dat' u 1:5 w points, 'plot.dat' u 1:6 w points, 'plot.dat' u 1:7 w points, 'plot.dat' u 1:8 w points, 'plot.dat' u 1:9 w points, 'plot.dat' u 1:10 w points, 'plot.dat' u 1:11 w points\n");
-    //fprintf(gp, "plot 'plot.dat' u 1:2 w points, 'plot.dat' u 1:3 w points, 'plot.dat' u 1:4 w points, 'plot.dat' u 1:5 w points, 'plot.dat' u 1:6 w points, 'plot.dat' u 1:7 w points, 'plot.dat' u 1:8 w points, 'plot.dat' u 1:9 w points, 'plot.dat' u 1:10  w points, 'plot.dat' u 1:11  w points, 'plot.dat' u 1:12  w points, 'plot.dat' u 1:13  w points, 'plot.dat' u 1:14  w points, 'plot.dat' u 1:15  w points, 'plot.dat' u 1:16  w points, 'plot.dat' u 1:17  w points, 'plot.dat' u 1:18  w points, 'plot.dat' u 1:19  w points, 'plot.dat' u 1:20  w points, 'plot.dat' u 1:21 w points\n");
-        //fprintf(gp, "pause -1\n");
-    fclose(gp);
-// show..
+	Plot_show(plot, time_max, ncar);
+	Plot_delete(time_max, plot);
+	
 	return 0;
 }

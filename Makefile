@@ -1,7 +1,7 @@
 all: main.o 
 	mpic++ main.o -Wall -o main
 
-main.o: main.cc _car.h
+main.o: main.cc _car.hpp plotshow.hpp map.hpp
 	mpic++ -c main.cc -Wall -o main.o
 
 test: all 
