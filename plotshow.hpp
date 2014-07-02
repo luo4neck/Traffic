@@ -44,6 +44,7 @@ void Plot_show(int** plot, const int time_max, const int ncar)
 		exit(0);
 	}
 	fprintf(gp, "set title 'Red light is on from time 0 to time 55 at location 150'\n");// this line is just for proposal show..
+	//fprintf(gp, "set key font ',20'\n"); // seems not supported by gnuplot 4.2..
 	fprintf(gp, "set key left top\n");// this line is just for proposal show..
 	fprintf(gp, "set ylabel 'Location on the Road\n");
 	fprintf(gp, "set xlabel 'Time / Second\n"); 

@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	int *Signal_x = new int[Signal_Number];
 	Signal_x[0] = -150;
 	Signal_x[1] = 150;
-	Signal_x[2] = 300;
+	Signal_x[2] = 500;
 
     int **plot = Plot_new(time_max, ncar);
 
@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
 	time_i++;
 		
 		if (time_i >= 55) Red = 0;
+		//if (time_i%40 == 0) Red = !Red;
 		printf("Sec %d\n", time_i);
 		
 		Car_forward_NE(list_east, lrand48(), Red, Signal_x, Signal_Number);
