@@ -43,7 +43,11 @@ void Plot_show(int** plot, const int time_max, const int ncar)
 		printf("Cannot plot the data!\n");
 		exit(0);
 	}
-	fprintf(gp, "plot 'plot.dat' u 1:2 w points, 'plot.dat' u 1:3 w points, 'plot.dat' u 1:4 w points, 'plot.dat' u 1:5 w points, 'plot.dat' u 1:6 w points, 'plot.dat' u 1:7 w points, 'plot.dat' u 1:8 w points, 'plot.dat' u 1:9 w points, 'plot.dat' u 1:10 w points, 'plot.dat' u 1:11 w points\n");
+	fprintf(gp, "set title 'Red light is on from time 0 to time 55 at location 150'\n");// this line is just for proposal show..
+	fprintf(gp, "set key left top\n");// this line is just for proposal show..
+	fprintf(gp, "set ylabel 'Location on the Road\n");
+	fprintf(gp, "set xlabel 'Time / Second\n"); 
+	fprintf(gp, "plot 'plot.dat' u 1:2 w points title 'car 1', 'plot.dat' u 1:3 w points title 'car 2', 'plot.dat' u 1:4 w points title 'car 3', 'plot.dat' u 1:5 w points title 'car 4', 'plot.dat' u 1:6 w points title 'car 5', 'plot.dat' u 1:7 w points title 'car 6', 'plot.dat' u 1:8 w points title 'car 7', 'plot.dat' u 1:9 w points title 'car 8', 'plot.dat' u 1:10 w points title 'car 9', 'plot.dat' u 1:11 w points title 'car 10'\n");// this line is just for proposal show..
 	//fprintf(gp, "plot 'plot.dat' u 1:2 w points, 'plot.dat' u 1:3 w points, 'plot.dat' u 1:4 w points, 'plot.dat' u 1:5 w points, 'plot.dat' u 1:6 w points, 'plot.dat' u 1:7 w points, 'plot.dat' u 1:8 w points, 'plot.dat' u 1:9 w points, 'plot.dat' u 1:10  w points, 'plot.dat' u 1:11  w points, 'plot.dat' u 1:12  w points, 'plot.dat' u 1:13  w points, 'plot.dat' u 1:14  w points, 'plot.dat' u 1:15  w points, 'plot.dat' u 1:16  w points, 'plot.dat' u 1:17  w points, 'plot.dat' u 1:18  w points, 'plot.dat' u 1:19  w points, 'plot.dat' u 1:20  w points, 'plot.dat' u 1:21 w points\n");
 	fclose(gp);
 }
