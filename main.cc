@@ -1,18 +1,28 @@
 #include<stdlib.h>
+#include<pthread.h>
 #include<mpi.h>
 #include<stdio.h>
 #include "car.hpp" // all Car_** and Dis_** functions are in this file..
 #include "map.hpp" 
-#include "plotshow.hpp" // all Plot_** functions are in this file..
+//#include "plotshow.hpp" // all Plot_** functions are in this file..
 #define comm MPI_COMM_WORLD
+#define THREADS 3 // number of roads..
 
 using namespace std;
 
+pthread_barrier_t barr;// barr is used to synchronization..
 const int ncar = 10;
 const int time_max = 100;
 
-int main(int argc, char *argv[])
+void * OneRoad(void *arg) // this is one road..
 {
+	int rc = pthread_barrier_wait(&barr);
+	if( rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
+	{
+		printf("Could not wait on barrier\n");
+		exit(-1);
+	}
+
 	// initialize the double ways..
 	CAR* list_east = NULL;
 	list_east = Car_construct(list_east, ncar, EAST);
@@ -29,30 +39,107 @@ int main(int argc, char *argv[])
 	Signal_x[1] = 150;
 	Signal_x[2] = 500;
 
-    int **plot = Plot_new(time_max, ncar);
+   // int **plot = Plot_new(time_max, ncar);
 
 	srand48(time(NULL));
 	int time_i=0; // time_i is just a stop condition..
 	bool Red=1; // Red=1 means all red lights on the road are on..
+	
 	while(time_i < time_max)
 	{
 	time_i++;
 		
 		if (time_i >= 55) Red = 0;
 		//if (time_i%40 == 0) Red = !Red;
-		printf("Sec %d\n", time_i);
+		//printf("Sec %d\n", time_i);
 		
 		Car_forward_NE(list_east, lrand48(), Red, Signal_x, Signal_Number);
 		Car_forward_SW(list_west, lrand48(), Red, Signal_x, Signal_Number);
-		// lrand48() is the seed..
-		Car_print(list_east);
-		Car_print(list_west);
 		
-		Plot_write(time_i, ncar, plot, list_east);
+		pthread_barrier_wait(&barr);//??
+		pthread_barrier_wait(&barr);// ??
+		// lrand48() is the seed..
+		
+		Car_print(list_east);
+		//Car_print(list_west);
     }
     
-	Plot_show(plot, time_max, ncar);
-	Plot_delete(time_max, plot);
+	return NULL;
+}
+
+int main(int argc, char *argv[])
+{
+	pthread_t thr[THREADS];
+	MPI_Init(&argc, &argv);
+
+	int myid, nps;
+	MPI_Comm_rank(comm, &myid);
+	MPI_Comm_size(comm, &nps);
 	
+	if(myid == 0) // check all inputs..
+	{
+		if (nps%2 != 0) 
+		{
+			printf("Input is wrong!\nPlease input as $ mpirun -n 2 ./main -x 3 -y 3\n");
+			exit(-1);
+		}
+		
+	}
+
+	const int mapsize = 3; // this is for temp use..
+	int* Xsignals = new int[mapsize];
+	int* Ysignals = new int[mapsize];
+	if(myid == 0) // this is main process, which will construct map and boardcast to all processes..
+	{
+		for(int i=0; i<mapsize; ++i)// the map will be send into OneRoad..
+		{
+			Xsignals[i] = (i+1) * 200;
+			Ysignals[i] = (i+1) * 200;
+		}
+	}
+
+    // Barrier initialization
+	if(pthread_barrier_init(&barr, NULL, THREADS+1))
+	{
+	 	printf("Could not create a barrier\n");
+	    return -1;
+	}
+	 
+	for(int i = 0; i < THREADS; ++i)
+	{
+	     if(pthread_create(&thr[i], NULL, &OneRoad, (void*)i))
+	    {
+	         printf("Could not create thread %d\n", i);
+	         return -1;
+	    }
+	}
+	 
+	pthread_barrier_wait(&barr);
+	int time_i=0;
+	while(time_i < time_max) // simulation part is in this while loop..
+	{
+		time_i++;
+		pthread_barrier_wait(&barr);
+		MPI_Barrier(comm);
+	
+		// MPI communication..
+		printf("%d, MAIN %d, ! in bar!\n",time_i, myid);
+		
+//		if(myid == 0 ) sleep(5);
+
+		MPI_Barrier(comm);
+		pthread_barrier_wait(&barr);
+	}
+
+	for(int i = 0; i < THREADS; ++i)
+	{
+	     if(pthread_join(thr[i], NULL))
+	    {
+	         printf("Could not join thread %d\n", i);
+	         return -1;
+	    }
+	}
+	
+	MPI_Finalize();
 	return 0;
 }

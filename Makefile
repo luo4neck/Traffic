@@ -5,8 +5,8 @@ main.o: main.cc car.hpp plotshow.hpp map.hpp
 	mpic++ -c main.cc -Wall -o main.o
 
 test: all 
-#	mpirun -n 20 ./main
-	./main
+	mpirun -n 2 ./main
+#	./main
 
 clean:
 	rm *.o plot.dat main
