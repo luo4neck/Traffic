@@ -28,7 +28,12 @@ CAR* Car_new(int x, int DRCT)
 {
 	CAR* c = (CAR*) malloc (sizeof(CAR));
 	c->next = NULL;
-	c->x = x * 5;// this line is only used in construction..
+	
+	if( DRCT == NORTH || DRCT == SOUTH )
+		c->y = x * 5;
+	else
+		c->x = x * 5;// this line is only used in construction..
+	
 	c->drct = DRCT;
 	c->length = base_length;
 	return c;
@@ -163,7 +168,11 @@ void Car_print(CAR* start)
 	
 	while (start!=NULL)
 	{
-		printf("%d  ", start->x);
+		if ( start->drct == NORTH || start->drct == SOUTH )
+			printf("%d  ", start->y);
+		else 
+			printf("%d  ", start->x);
+		
 		start = start->next;
 	}
 	printf("\n");

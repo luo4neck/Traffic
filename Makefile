@@ -9,4 +9,5 @@ test: all
 #	./main
 
 clean:
-	rm *.o plot.dat main
+	rm *.o main
+#	rm *.o plot.dat main

@@ -6,13 +6,14 @@
 #include "map.hpp" 
 //#include "plotshow.hpp" // all Plot_** functions are in this file..
 #define comm MPI_COMM_WORLD
-#define THREADS 3 // number of roads..
 
 using namespace std;
 
 pthread_barrier_t barr;// barr is used to synchronization..
 const int ncar = 10;
-const int time_max = 100;
+const int time_max = 10;
+const int THREADS = 3; // number of roads..
+int myid, nps;
 
 void * OneRoad(void *arg) // this is one road..
 {
@@ -25,13 +26,27 @@ void * OneRoad(void *arg) // this is one road..
 
 	// initialize the double ways..
 	CAR* list_east = NULL;
-	list_east = Car_construct(list_east, ncar, EAST);
 	CAR* list_west = NULL;
-	list_west = Car_construct(list_west, ncar, WEST);
+	CAR* list_north = NULL;
+	CAR* list_south = NULL;
 	
-	// show the location of cars on the two ways.. 
-	Car_print(list_east);
-	Car_print(list_west);
+	// if process id (myid) is odd, the road is north-south. if process id (myid) is even, the road is east-west ..
+	if( myid%2 == 0 ) //even..
+	{
+		list_east = Car_construct(list_east, ncar, EAST);
+		list_west = Car_construct(list_west, ncar, WEST);
+		// show the location of cars on the two ways.. 
+		Car_print(list_east);
+		Car_print(list_west);
+	}
+	else // odd.
+	{
+		list_north = Car_construct(list_north, ncar, NORTH);
+		list_south = Car_construct(list_south, ncar, SOUTH);
+		// show the location of cars on the two ways.. 
+		Car_print(list_north);
+		Car_print(list_south);
+	}
 
 	int Signal_Number = 3;
 	int *Signal_x = new int[Signal_Number];
@@ -51,19 +66,39 @@ void * OneRoad(void *arg) // this is one road..
 		
 		if (time_i >= 55) Red = 0;
 		//if (time_i%40 == 0) Red = !Red;
-		//printf("Sec %d\n", time_i);
+		printf("Sec %d th:%lu in pr:%d\n", time_i, pthread_self(), myid);// lu is required to print the pthread_t..
 		
-		Car_forward_NE(list_east, lrand48(), Red, Signal_x, Signal_Number);
-		Car_forward_SW(list_west, lrand48(), Red, Signal_x, Signal_Number);
+		// if process id (myid) is odd, the road is north-south. if process id (myid) is even, the road is east-west ..
+		if( myid%2 == 0 )
+		{
+			Car_forward_NE(list_east, lrand48(), Red, Signal_x, Signal_Number);
+			Car_forward_SW(list_west, lrand48(), Red, Signal_x, Signal_Number);
+		}
+		else
+		{
+			Car_forward_NE(list_north, lrand48(), Red, Signal_x, Signal_Number);
+			Car_forward_SW(list_south, lrand48(), Red, Signal_x, Signal_Number);
+		}
 		
 		pthread_barrier_wait(&barr);//??
 		pthread_barrier_wait(&barr);// ??
 		// lrand48() is the seed..
 		
-		Car_print(list_east);
+		//Car_print(list_east);
 		//Car_print(list_west);
     }
-    
+	
+	if( myid%2 == 0 )
+	{
+		Car_print(list_east);
+		Car_print(list_west);
+	}
+	else
+	{
+		Car_print(list_north);
+		Car_print(list_south);
+	}
+	
 	return NULL;
 }
 
@@ -72,7 +107,6 @@ int main(int argc, char *argv[])
 	pthread_t thr[THREADS];
 	MPI_Init(&argc, &argv);
 
-	int myid, nps;
 	MPI_Comm_rank(comm, &myid);
 	MPI_Comm_size(comm, &nps);
 	
@@ -125,7 +159,7 @@ int main(int argc, char *argv[])
 		// MPI communication..
 		printf("%d, MAIN %d, ! in bar!\n",time_i, myid);
 		
-//		if(myid == 0 ) sleep(5);
+	//	if(myid == 0 ) sleep(1);
 
 		MPI_Barrier(comm);
 		pthread_barrier_wait(&barr);
