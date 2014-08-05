@@ -12,11 +12,24 @@ using namespace std;
 pthread_barrier_t barr;// barr is used to synchronization..
 const int ncar = 10;
 const int time_max = 10;
-const int THREADS = 3; // number of roads..
+const int THREADS = 5; // number of roads..
+bool Red=1; // Red=1 means all red lights on the road are on..
 int myid, nps;
 
-void * OneRoad(void *arg) // this is one road..
+int pos_space[THREADS][THREADS];
+int neg_space[THREADS][THREADS];
+
+// this struct will be used to transport data from main thread into branch thread..
+typedef struct info
 {
+	int rank;
+} Info; 
+
+void * OneRoad(void* arg) // this is one road..
+{
+	Info *me = (Info*)arg;
+	int tid = me->rank;
+	
 	int rc = pthread_barrier_wait(&barr);
 	if( rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
 	{
@@ -35,12 +48,14 @@ void * OneRoad(void *arg) // this is one road..
 	{
 		list_east = Car_construct(list_east, ncar, EAST);
 		list_west = Car_construct(list_west, ncar, WEST);
+	printf("pid = %d, tid = %d\n",myid, tid);
 		// show the location of cars on the two ways.. 
 		Car_print(list_east);
 		Car_print(list_west);
 	}
 	else // odd.
 	{
+	printf("pid = %d, tid = %d\n",myid, tid);
 		list_north = Car_construct(list_north, ncar, NORTH);
 		list_south = Car_construct(list_south, ncar, SOUTH);
 		// show the location of cars on the two ways.. 
@@ -58,7 +73,6 @@ void * OneRoad(void *arg) // this is one road..
 
 	srand48(time(NULL));
 	int time_i=0; // time_i is just a stop condition..
-	bool Red=1; // Red=1 means all red lights on the road are on..
 	
 	while(time_i < time_max)
 	{
@@ -66,9 +80,10 @@ void * OneRoad(void *arg) // this is one road..
 		
 		if (time_i >= 55) Red = 0;
 		//if (time_i%40 == 0) Red = !Red;
-		printf("Sec %d th:%lu in pr:%d\n", time_i, pthread_self(), myid);// lu is required to print the pthread_t..
+		printf("Sec %d th:%d in pr:%d\n", time_i, tid, myid);// lu is required to print the pthread_t..
 		
 		// if process id (myid) is odd, the road is north-south. if process id (myid) is even, the road is east-west ..
+		// lrand48() is the seed..
 		if( myid%2 == 0 )
 		{
 			Car_forward_NE(list_east, lrand48(), Red, Signal_x, Signal_Number);
@@ -82,7 +97,6 @@ void * OneRoad(void *arg) // this is one road..
 		
 		pthread_barrier_wait(&barr);//??
 		pthread_barrier_wait(&barr);// ??
-		// lrand48() is the seed..
 		
 		//Car_print(list_east);
 		//Car_print(list_west);
@@ -141,13 +155,19 @@ int main(int argc, char *argv[])
 	 
 	for(int i = 0; i < THREADS; ++i)
 	{
-	     if(pthread_create(&thr[i], NULL, &OneRoad, (void*)i))
+		Info *arg;
+		arg = (Info*)malloc(sizeof(Info));
+		arg->rank = i;
+	    //if(pthread_create(&thr[i], NULL, &OneRoad, (void*)i))
+	    if(pthread_create(&thr[i], NULL, &OneRoad, (void*)arg))
 	    {
 	         printf("Could not create thread %d\n", i);
 	         return -1;
 	    }
 	}
 	 
+	if (myid%2 == 0) Red = 1; // east-west road start with red light..
+	else 			 Red = 0;// south-north road start with green light..
 	pthread_barrier_wait(&barr);
 	int time_i=0;
 	while(time_i < time_max) // simulation part is in this while loop..
@@ -158,16 +178,16 @@ int main(int argc, char *argv[])
 	
 		// MPI communication..
 		printf("%d, MAIN %d, ! in bar!\n",time_i, myid);
+	
+		if ( time_i%30 == 0 ) Red = !Red; //colour of the light changes every half minute..
 		
-	//	if(myid == 0 ) sleep(1);
-
 		MPI_Barrier(comm);
 		pthread_barrier_wait(&barr);
 	}
 
 	for(int i = 0; i < THREADS; ++i)
 	{
-	     if(pthread_join(thr[i], NULL))
+	    if(pthread_join(thr[i], NULL))
 	    {
 	         printf("Could not join thread %d\n", i);
 	         return -1;

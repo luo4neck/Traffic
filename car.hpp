@@ -1,4 +1,5 @@
 #include<stdlib.h>
+#include<string>
 #include<stdio.h>
 #define NORTH 0
 #define SOUTH 1
@@ -21,6 +22,7 @@ typedef struct CAR_struct
 	int x; // location of the head of the car..
 	int y; // location of the head of the car..
 	int length;
+	string path;
 } 	CAR;
 
 CAR* Car_new(int x, int DRCT)
@@ -36,6 +38,9 @@ CAR* Car_new(int x, int DRCT)
 	
 	c->drct = DRCT;
 	c->length = base_length;
+	//c->path.assign("ssrlss");
+	//	printf("fine here\n");
+	//c->path = {"ssrlss"};
 	return c;
 }
 
@@ -61,24 +66,59 @@ void Car_forward_NE(CAR* start, int seed, const bool Red, const int *sig, const 
 		int slowdown = 0, multi = 0; 
 		if (drand48() > 0.5) slowdown = 1;
 
-		int dis=0;
-		if(start->next == NULL) dis = 100; // no cars in front..
-		else if (start->drct == EAST) dis = start->next->x - start->x - start->next->length; // exactly distance to front car..
-		else						  dis = start->next->y - start->y - start->next->length;
-			
-		if(Red) // if the red light is on..
+		int disfr=0, dissig=0;//disfr is the distance to front car.. dissig is the distance to signal..
+		if (start->drct == EAST) dissig = Dis_signal_NE(start->x, sig, num); 
+		else 					 dissig = Dis_signal_NE(start->y, sig, num);
+
+		if(start->next == NULL) disfr = 100; // no cars in front..
+		else if (start->drct == EAST) disfr = start->next->x - start->x - start->next->length; // exactly distance to front car..
+		else						  disfr = start->next->y - start->y - start->next->length;
+		
+/*
+		if( Red || start->path[0] == 'r' || start->path[0] == 'l' ) // if the red light is on, or turn to l or r..
 		{
 			// Dis_signal_NE() return distance to front signal..
-			if (start->drct == EAST) dis = min(Dis_signal_NE(start->x, sig, num), dis); 
-			else 					 dis = min(Dis_signal_NE(start->y, sig, num), dis);
+			if (start->drct == EAST) dis = min( dissig, dis); 
+			else 					 dis = min( dissig, dis);
+		}
+*/
+		if( Red ) // light is red.. only thing matters is distance to light..
+		{
+			int dis = dissig;
+			if (dis > 50)	   multi = 10 - slowdown;
+			else if (dis > 20) multi = 5 - slowdown;
+			else if (dis > 5)  multi = 3 - slowdown;
+			else if (dis > 1)  multi = 1; // dis=2 3 4 5, move 1m forward.. 
+			else multi = 0; // dis = 1, time to stop for red light.. 
+		}
+		else // light is green.. consider to go straight or left or right..
+		{
+			int dis=0;
+			if (start->path[0] == 'r' || start->path[0] == 'l') // have to turn..
+				dis = dissig;
+			else // go straight.. 
+				dis = disfr;
+			
+			if (dis > 50)	   multi = 10 - slowdown;
+			else if (dis > 20) multi = 5 - slowdown;
+			else if (dis > 5)  multi = 3 - slowdown;
+			else if (dis > 1)  multi = 1; // dis=2 3 4 5, move 1m forward.. 
+			else 
+			{
+				//if ( h
+				multi = 0; // dis = 1, time to stop for red light or trun direction.. 
+		
+			}
 		}
 
+		/*
 		if (dis > 50)	   multi = 10 - slowdown;
 		else if (dis > 20) multi = 5 - slowdown;
 		else if (dis > 5)  multi = 3 - slowdown;
-		else if (dis > 1)  multi = 1; // dis=2 or dis=3, move 1m forward.. 
-		else multi = 0; // dis = 1, stop..
-		
+		else if (dis > 1)  multi = 1; // dis=2 3 4 5, move 1m forward.. 
+		else // dis = 1, time to stop for red light or trun direction.. 
+		multi = 0; // dis = 1, stop..
+*/
 		if( start->drct == NORTH) start->y = start->y + base_speed * multi;
 		else 					  start->x = start->x + base_speed * multi; // east..
 	
@@ -109,8 +149,8 @@ void Car_forward_SW(CAR* start, int seed, const bool Red, const int *sig, const 
 		int slowdown = 0, multi = 0; 
 		if (drand48() > 0.5) slowdown = 1;
 		
-		if(Red) // if the red light is on..
-		{	
+		if( Red || start->path[0] == 'r' || start->path[0] == 'l' ) // if the red light is on, or turn to l or r..
+		{
 			// Dis_signal_SW() return distance to front signal..
 			if(start->drct == WEST) dis = min(Dis_signal_SW(start->x, sig, num), dis);
 			else					dis = min(Dis_signal_SW(start->y, sig, num), dis);
@@ -119,14 +159,14 @@ void Car_forward_SW(CAR* start, int seed, const bool Red, const int *sig, const 
 		if (dis > 50) multi = 10 - slowdown;
 		else if (dis > 20) multi = 5 - slowdown;
 		else if (dis > 5) multi = 3 - slowdown;
-		else if (dis > 1) multi = 1; // dis=2 or dis=3, move 1m forward.. 
+		else if (dis > 1) multi = 1; // dis=2 3 4 5, move 1m forward.. 
 		else multi = 0; // dis = 1, stop..
 
 		if( start->drct == SOUTH) start->y = start->y - base_speed * multi; // move to south..
 		else 					  start->x = start->x - base_speed * multi; // move to west..
 	
 		if(start->next != NULL)
-		{	
+		{
 			if (start->drct == WEST) dis = start->next->x - start->x - start->length;
 			else 					 dis = start->next->y - start->y - start->length;
 		}
