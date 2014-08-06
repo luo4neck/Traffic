@@ -1,6 +1,7 @@
 #include<stdlib.h>
 #include<string>
 #include<stdio.h>
+#include "map.hpp"
 #define NORTH 0
 #define SOUTH 1
 #define WEST  2
@@ -44,20 +45,23 @@ CAR* Car_new(int x, int DRCT)
 	return c;
 }
 
-int Dis_signal_NE(int x, const int *sig, const int num)
+//int Dis_signal_NE(int x, const int *sig, const int num)
+int Dis_signal_NE(int x, const int myid, MAP map) 
 // x is the current location of a car, *signal is the location information of singal lights..
 {
 	int i=0, dis = 0;
-	while(i<num)
+	while( i < map.Size() )
 	{
-		dis = sig[i] - x;
+		//dis = sig[i] - x;
+		dis = map.XY(myid, i) - x;
 		if ( dis>0 && dis<15) return dis;
 		i++;
 	}
 	return 60;
 }
 
-void Car_forward_NE(CAR* start, int seed, const bool Red, const int *sig, const int num)
+void Car_forward_NE(CAR* start, int seed, const bool Red, const int myid, MAP map)
+//void Car_forward_NE(CAR* start, int seed, const bool Red, const int *sig, const int num)
 // move function to north or east..
 {
 	srand48(seed);
@@ -67,8 +71,10 @@ void Car_forward_NE(CAR* start, int seed, const bool Red, const int *sig, const 
 		if (drand48() > 0.5) slowdown = 1;
 
 		int disfr=0, dissig=0;//disfr is the distance to front car.. dissig is the distance to signal..
-		if (start->drct == EAST) dissig = Dis_signal_NE(start->x, sig, num); 
-		else 					 dissig = Dis_signal_NE(start->y, sig, num);
+		//if (start->drct == EAST) dissig = Dis_signal_NE(start->x, sig, num); 
+		if (start->drct == EAST) dissig = Dis_signal_NE(start->x, myid, map); 
+		//else 					 dissig = Dis_signal_NE(start->y, sig, num);
+		else 					 dissig = Dis_signal_NE(start->x, myid, map);
 
 		if(start->next == NULL) disfr = 100; // no cars in front..
 		else if (start->drct == EAST) disfr = start->next->x - start->x - start->next->length; // exactly distance to front car..

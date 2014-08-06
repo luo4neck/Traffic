@@ -25,6 +25,8 @@ typedef struct info
 	int rank;
 } Info; 
 
+MAP Map(THREADS, 2, 5);
+
 void * OneRoad(void* arg) // this is one road..
 {
 	Info *me = (Info*)arg;
@@ -86,12 +88,14 @@ void * OneRoad(void* arg) // this is one road..
 		// lrand48() is the seed..
 		if( myid%2 == 0 )
 		{
-			Car_forward_NE(list_east, lrand48(), Red, Signal_x, Signal_Number);
+			//Car_forward_NE(list_east, lrand48(), Red, Signal_x, Signal_Number);
+			Car_forward_NE(list_east, lrand48(), Red, myid, Map);
 			Car_forward_SW(list_west, lrand48(), Red, Signal_x, Signal_Number);
 		}
 		else
 		{
-			Car_forward_NE(list_north, lrand48(), Red, Signal_x, Signal_Number);
+			Car_forward_NE(list_east, lrand48(), Red, myid, Map);
+			//Car_forward_NE(list_north, lrand48(), Red, Signal_x, Signal_Number);
 			Car_forward_SW(list_south, lrand48(), Red, Signal_x, Signal_Number);
 		}
 		
