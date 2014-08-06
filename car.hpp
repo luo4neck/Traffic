@@ -12,7 +12,8 @@ using namespace std;
 const int base_speed = 1;
 const int base_length = 3;
 
-int Dis_signal_NE(int x, int *sig, int num);
+//int Dis_signal_NE(int x, int *sig, int num);
+int Dis_signal_NE(int x, const int myid, MAP map); 
 int Dis_signal_SW(int x, int *sig, int num);
 
 typedef struct CAR_struct
@@ -29,7 +30,7 @@ typedef struct CAR_struct
 CAR* Car_new(int x, int DRCT)
 // malloc memory space of the car..
 {
-	CAR* c = (CAR*) malloc (sizeof(CAR));
+	CAR* c = new CAR; 
 	c->next = NULL;
 	
 	if( DRCT == NORTH || DRCT == SOUTH )
@@ -39,9 +40,8 @@ CAR* Car_new(int x, int DRCT)
 	
 	c->drct = DRCT;
 	c->length = base_length;
-	//c->path.assign("ssrlss");
-	//	printf("fine here\n");
-	//c->path = {"ssrlss"};
+	c->path.assign("ssrlss");
+	//printf("fine here\n");
 	return c;
 }
 
