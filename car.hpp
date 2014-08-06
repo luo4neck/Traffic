@@ -45,7 +45,6 @@ CAR* Car_new(int x, int DRCT)
 	return c;
 }
 
-//int Dis_signal_NE(int x, const int *sig, const int num)
 int Dis_signal_NE(int x, const int myid, MAP map) 
 // x is the current location of a car, *signal is the location information of singal lights..
 {
@@ -61,7 +60,6 @@ int Dis_signal_NE(int x, const int myid, MAP map)
 }
 
 void Car_forward_NE(CAR* start, int seed, const bool Red, const int myid, MAP map)
-//void Car_forward_NE(CAR* start, int seed, const bool Red, const int *sig, const int num)
 // move function to north or east..
 {
 	srand48(seed);
@@ -71,23 +69,14 @@ void Car_forward_NE(CAR* start, int seed, const bool Red, const int myid, MAP ma
 		if (drand48() > 0.5) slowdown = 1;
 
 		int disfr=0, dissig=0;//disfr is the distance to front car.. dissig is the distance to signal..
-		//if (start->drct == EAST) dissig = Dis_signal_NE(start->x, sig, num); 
 		if (start->drct == EAST) dissig = Dis_signal_NE(start->x, myid, map); 
-		//else 					 dissig = Dis_signal_NE(start->y, sig, num);
 		else 					 dissig = Dis_signal_NE(start->x, myid, map);
 
 		if(start->next == NULL) disfr = 100; // no cars in front..
 		else if (start->drct == EAST) disfr = start->next->x - start->x - start->next->length; // exactly distance to front car..
 		else						  disfr = start->next->y - start->y - start->next->length;
 		
-/*
-		if( Red || start->path[0] == 'r' || start->path[0] == 'l' ) // if the red light is on, or turn to l or r..
-		{
-			// Dis_signal_NE() return distance to front signal..
-			if (start->drct == EAST) dis = min( dissig, dis); 
-			else 					 dis = min( dissig, dis);
-		}
-*/
+		
 		if( Red ) // light is red.. only thing matters is distance to light..
 		{
 			int dis = dissig;
@@ -109,22 +98,15 @@ void Car_forward_NE(CAR* start, int seed, const bool Red, const int myid, MAP ma
 			else if (dis > 20) multi = 5 - slowdown;
 			else if (dis > 5)  multi = 3 - slowdown;
 			else if (dis > 1)  multi = 1; // dis=2 3 4 5, move 1m forward.. 
-			else 
+			else // dis = 1, time to stop for red light or trun direction.. 
 			{
-				//if ( h
-				multi = 0; // dis = 1, time to stop for red light or trun direction.. 
-		
+				if ( start->path[0] == 'l' || start->path[0] == 'r' )
+				multi = 0;
+				else // path[0] = 's' 
+				multi = 0; 
 			}
 		}
 
-		/*
-		if (dis > 50)	   multi = 10 - slowdown;
-		else if (dis > 20) multi = 5 - slowdown;
-		else if (dis > 5)  multi = 3 - slowdown;
-		else if (dis > 1)  multi = 1; // dis=2 3 4 5, move 1m forward.. 
-		else // dis = 1, time to stop for red light or trun direction.. 
-		multi = 0; // dis = 1, stop..
-*/
 		if( start->drct == NORTH) start->y = start->y + base_speed * multi;
 		else 					  start->x = start->x + base_speed * multi; // east..
 	
@@ -132,49 +114,73 @@ void Car_forward_NE(CAR* start, int seed, const bool Red, const int myid, MAP ma
 	}
 }
 
-int Dis_signal_SW(int x, const int *sig, const int num)
+int Dis_signal_SW(int x, const int myid, MAP map) 
 // x is the current location of a car, *signal is the location information of singal lights..
 {
-	int dis=0, i=num-1;
+	int dis=0, i= map.Size() - 1;
 	while(i>=0)
 	{
-		dis = x - sig[i];
+		dis = x - map.XY(myid, i);
 		if ( dis>0 && dis<15) return dis; 
 		i--;
 	}
 	return 60;
 }
 
-void Car_forward_SW(CAR* start, int seed, const bool Red, const int *sig, const int num)
+void Car_forward_SW(CAR* start, int seed, const bool Red, const int myid, MAP map)
 // move function to west or south..
 {
 	srand48(seed);
-	int dis = 100;
+	int disfr = 100;
 	while( start!=NULL )
 	{
 		int slowdown = 0, multi = 0; 
 		if (drand48() > 0.5) slowdown = 1;
 		
-		if( Red || start->path[0] == 'r' || start->path[0] == 'l' ) // if the red light is on, or turn to l or r..
-		{
-			// Dis_signal_SW() return distance to front signal..
-			if(start->drct == WEST) dis = min(Dis_signal_SW(start->x, sig, num), dis);
-			else					dis = min(Dis_signal_SW(start->y, sig, num), dis);
-		}
+		int dissig=0;
+		
+		if(start->drct == WEST) dissig = Dis_signal_SW(start->x, myid, map);
+		else					dissig = Dis_signal_SW(start->x, myid, map);
 
-		if (dis > 50) multi = 10 - slowdown;
-		else if (dis > 20) multi = 5 - slowdown;
-		else if (dis > 5) multi = 3 - slowdown;
-		else if (dis > 1) multi = 1; // dis=2 3 4 5, move 1m forward.. 
-		else multi = 0; // dis = 1, stop..
+		if( Red )
+		{
+			int dis = dissig;
+			if (dis > 50) multi = 10 - slowdown;
+			else if (dis > 20) multi = 5 - slowdown;
+			else if (dis > 5) multi = 3 - slowdown;
+			else if (dis > 1) multi = 1; // dis=2 3 4 5, move 1m forward.. 
+			
+			else multi = 0; // dis = 1, stop..
+		}
+		else // green light.. 
+		{
+			int dis=0; 
+			if (start->path[0] == 'r' || start->path[0] == 'l' )
+				dis = dissig;
+			else
+				dis = disfr;
+			
+			if (dis > 50) multi = 10 - slowdown;
+			else if (dis > 20) multi = 5 - slowdown;
+			else if (dis > 5) multi = 3 - slowdown;
+			else if (dis > 1) multi = 1; // dis=2 3 4 5, move 1m forward.. 
+			else // dis = 1, stop..
+			{
+				if (start->path[0] == 'r' || start->path[0] == 'l' )
+				multi = 0;
+				else // path[0] = 's'
+				multi = 0;
+			}
+
+		}
 
 		if( start->drct == SOUTH) start->y = start->y - base_speed * multi; // move to south..
 		else 					  start->x = start->x - base_speed * multi; // move to west..
 	
 		if(start->next != NULL)
 		{
-			if (start->drct == WEST) dis = start->next->x - start->x - start->length;
-			else 					 dis = start->next->y - start->y - start->length;
+			if (start->drct == WEST) disfr = start->next->x - start->x - start->length;
+			else 					 disfr = start->next->y - start->y - start->length;
 		}
 		start = start->next;// goto next car..
 	}

@@ -89,14 +89,16 @@ void * OneRoad(void* arg) // this is one road..
 		if( myid%2 == 0 )
 		{
 			//Car_forward_NE(list_east, lrand48(), Red, Signal_x, Signal_Number);
+			//Car_forward_SW(list_west, lrand48(), Red, Signal_x, Signal_Number);
 			Car_forward_NE(list_east, lrand48(), Red, myid, Map);
-			Car_forward_SW(list_west, lrand48(), Red, Signal_x, Signal_Number);
+			Car_forward_NE(list_west, lrand48(), Red, myid, Map);
 		}
 		else
 		{
-			Car_forward_NE(list_east, lrand48(), Red, myid, Map);
+			Car_forward_NE(list_north, lrand48(), Red, myid, Map);
+			Car_forward_SW(list_south, lrand48(), Red, myid, Map);
 			//Car_forward_NE(list_north, lrand48(), Red, Signal_x, Signal_Number);
-			Car_forward_SW(list_south, lrand48(), Red, Signal_x, Signal_Number);
+			//Car_forward_SW(list_south, lrand48(), Red, Signal_x, Signal_Number);
 		}
 		
 		pthread_barrier_wait(&barr);//??
