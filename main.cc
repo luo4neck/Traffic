@@ -3,43 +3,49 @@
 #include<iostream>
 #include<stdlib.h>
 #include<stdio.h>
+#include "car.hpp"
 
 using namespace std;
-
-int XYtoKEY(int x, int y)
-{
-	if (x>99999 || y>99999) 
-	{
-		printf("input is wrong!");
-		exit(-1);
-	}
-	
-	return x*10000 + y;
-}
 
 int main()
 {
 	map<int, string> spot;
-	
-	for(int i=0; i<100; ++i)
+	map<int, string>:: iterator spotitr;
+	list<class CAR> car;
+	list<class CAR>:: iterator caritr;
+
+	for(int i=0; i<100; ++i) // constructing the map..
 	{
 		string space;
 		space[0] = space[1] = '0';
 		spot.insert( pair<int, string> ( XYtoKEY( i, 5), space));
 	}
 
-	map<int, string>:: iterator spotitr;
+	for(int i=0; i<3; ++i) // constructing the cars..
+	{
+		CAR newcar(i*3, 5);
+		if ( newcar.DRCT()%2 == 0)  // go to north or east..
+		spot[ XYtoKEY (i*3, 5) ] = "01"; // make this spot to be occupied..
+		else						// goto west or south.. 
+		spot[ XYtoKEY (i*3, 5) ] = "10"; // make this spot to be occupied..
+		
+		car.push_back(newcar);
+	}
 	
-	spotitr = spot.find( XYtoKEY(50, 5) ); 
-	if ( spotitr != spot.end())		cout<<spotitr->second[0]<<" "<<spotitr->second[1]<<endl;
-	else							cout<<"cant find this spot!"<<endl;
+	int time_i = 0;
+	while(time_i < 2 ) // main loop.. one loop is one time step..
+	{
 	
-	spot[ XYtoKEY( 50, 5) ] = "11"; // change the value of a key in the map..
-
-	spotitr = spot.find( XYtoKEY(50, 5) ); 
-	if ( spotitr != spot.end())		cout<<spotitr->second[0]<<" "<<spotitr->second[1]<<endl;
-	else							cout<<"cant find this spot!"<<endl;
-
+		for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
+		{
+			int newx(0), newy(0), drct(caritr->DRCT()) ;
+			caritr->space_detect(drct, newx, newy, caritr->X(), caritr->Y(), spot);
+			caritr->Move(newx, newy, spot);
+			cout<<caritr->X()<<" "<<caritr->Y()<<endl;
+		}
+	
+		time_i++;
+	}
 
 	return 0;
 }
