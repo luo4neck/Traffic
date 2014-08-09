@@ -11,6 +11,29 @@
 
 using namespace std;
 
+struct LR
+// used to construct the spot map..
+{
+	bool lt;
+	bool rt;
+};
+
+void print(map<int, LR> spot)
+{
+	map<int, LR>:: iterator itr;
+	for(itr = spot.begin(); itr != spot.end(); ++itr)
+	{
+			cout<<itr->second.lt<<" ";
+	}
+	cout<<endl;
+	
+	for(itr = spot.begin(); itr != spot.end(); ++itr)
+	{
+			cout<<itr->second.rt<<" ";
+	}
+	cout<<endl;
+}
+
 int XYtoKEY(int x, int y)
 {
 	if (x>99999 || y>99999) 
@@ -49,9 +72,10 @@ class CAR
 	const int DRCT()
 	{ return drct; }
 
-	void space_detect(const int drct, int &newx, int &newy, const int x, const int y, map<int, string> spot)
+	void space_detect(const int drct, int &newx, int &newy, const int x, const int y, map<int, LR> spot)
+	// find a new to be occupied..
 	{
-		map<int, string>:: iterator spotitr;
+		map<int, LR>:: iterator spotitr;
 		newx = x;
 		newy = y;
 		for(int i=1; i<=5; ++i)
@@ -59,51 +83,52 @@ class CAR
 			if      (drct == 0) // east.. run on right side.. space[1]..
 			{
 				spotitr = spot.find( XYtoKEY(x+i, y) );
-				if ( spotitr->second[1] == '1' )    break;
+				if ( spotitr->second.rt == 1 )    break;
 				newx = x+i;
 			}
 			else if (drct == 1) // west.. run on left side.. space[0]..
 			{
 			    spotitr = spot.find( XYtoKEY(x-i, y) );
-				if ( spotitr->second[0] == '1' )    break;
+				if ( spotitr->second.lt == 1 )    break;
 				newx = x-i;
 			}
 			else if (drct == 2) // north.. run on right side.. space[1]..
 			{
 				spotitr = spot.find( XYtoKEY(x, y+i) );
-				if ( spotitr->second[1] == '1' )    break;
+				if ( spotitr->second.rt == 1 )    break;
 				newy = y+i;
 			}
 			else                // south.. run on left side.. space[0]..
 			{
 				spotitr = spot.find( XYtoKEY(x, y-i) );
-				if ( spotitr->second[0] == '1' )    break;
+				if ( spotitr->second.lt == 1 )    break;
 				newy = y-i;
 			}
 		}
 			//  cout<<x<<" "<<y<<endl;
 	}
 
-	void Move(const int newx, const int newy, map<int, string> spot)
+	void Move(const int newx, const int newy, map<int, LR> &spot)
+	// move from one spot to another spot..
 	{
-		map<int, string>::iterator spotitr;
-		
-		if (DRCT()%2 == 0) // east or north..
-		{	
-			spotitr = spot.find( XYtoKEY( X(), Y() ) );
-			spotitr->second[1] = '0';	
-			spotitr = spot.find( XYtoKEY(newx, newy) );
-			spotitr->second[1] = '1';
-		}
-		else				// west or south..
+		if( newx != X() || newy != Y() )
 		{
-			spotitr = spot.find( XYtoKEY( X(), Y() ) );
-			spotitr->second[0] = '0';	
-			spotitr = spot.find( XYtoKEY(newx, newy) );
-			spotitr->second[0] = '1';
-		}
+
+			map<int, LR>::iterator spotitr;
 		
+			if (DRCT()%2 == 0) // east or north.. second[1] will be changed..
+			{
+				spot[ XYtoKEY( X(), Y() ) ].rt = 0;
+				spot[ XYtoKEY(newx, newy) ].rt = 1;
+			}
+			else				// west or south.. second[0] will be changed..
+			{
+				spot[ XYtoKEY( X(), Y() ) ].lt = 0;
+				spot[ XYtoKEY(newx, newy) ].lt = 1;
+			}
+
 		x=newx;
 		y=newy;
+		}
 	}
 };
