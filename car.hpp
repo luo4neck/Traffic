@@ -53,11 +53,11 @@ class CAR
 	int drct;
 	string path;
 
-	CAR(int X, int Y)
+	CAR(int X, int Y, int DRCT)
 	{
 		x = X;
 		y = Y;
-		drct = 0;
+		drct = DRCT;
 		path = "ssss";
 	}
 
@@ -75,33 +75,28 @@ class CAR
 	void space_detect(const int drct, int &newx, int &newy, const int x, const int y, map<int, LR> spot)
 	// find a new to be occupied..
 	{
-		map<int, LR>:: iterator spotitr;
 		newx = x;
 		newy = y;
 		for(int i=1; i<=5; ++i)
 		{
 			if      (drct == 0) // east.. run on right side.. space[1]..
 			{
-				spotitr = spot.find( XYtoKEY(x+i, y) );
-				if ( spotitr->second.rt == 1 )    break;
+				if ( spot[ XYtoKEY(x+i, y) ].rt == 1) break;
 				newx = x+i;
 			}
 			else if (drct == 1) // west.. run on left side.. space[0]..
 			{
-			    spotitr = spot.find( XYtoKEY(x-i, y) );
-				if ( spotitr->second.lt == 1 )    break;
+				if ( spot[ XYtoKEY(x-i, y) ].lt == 1) break;
 				newx = x-i;
 			}
 			else if (drct == 2) // north.. run on right side.. space[1]..
 			{
-				spotitr = spot.find( XYtoKEY(x, y+i) );
-				if ( spotitr->second.rt == 1 )    break;
+				if ( spot[ XYtoKEY(x, y+i) ].rt == 1) break;
 				newy = y+i;
 			}
 			else                // south.. run on left side.. space[0]..
 			{
-				spotitr = spot.find( XYtoKEY(x, y-i) );
-				if ( spotitr->second.lt == 1 )    break;
+				if ( spot[ XYtoKEY(x, y-i) ].lt == 1) break;
 				newy = y-i;
 			}
 		}
