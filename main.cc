@@ -14,7 +14,7 @@ int main()
 	list<class CAR> car;
 	list<class CAR>:: iterator caritr;
 
-	for(int i=0; i<50; ++i) // constructing the map..
+	for(int i=0; i<40; ++i) // constructing the map..
 	{
 		LR space;
 		space.lt = 0; // left side of the spot..
