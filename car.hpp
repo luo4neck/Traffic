@@ -35,6 +35,9 @@ void print(map<int, LR> spot)
 }
 
 int XYtoKEY(int x, int y)
+// translate x and y into spot key..
+// both x and y should not be larger than 99999 
+// to ensure the unique of translated key value..
 {
 	if (x>99999 || y>99999) 
 	{
