@@ -86,7 +86,7 @@ class CAR
 		x = X;
 		y = Y;
 		drct = DRCT;
-		path = "ssss";
+		path = "l";
 	}
 
 	~CAR() {}
@@ -106,7 +106,7 @@ class CAR
 		map<int, LR>:: iterator spotitr;
 		newx = X(), newy = Y();
 
-		for( int i=1; i<=5; ++i) // detect 5 spots maxism..
+		for( int i=0; i<5; ++i) // detect 5 spots maxism..
 		{
 			int tmpx = newx, tmpy = newy;
 			if ( DRCT() == EAST ) 		tmpx = newx + 1;
@@ -138,8 +138,7 @@ class CAR
 					spotitr = spot.find	( XYtoKEY(tmpx, tmpy) );
 					if ( spotitr != spot.end() ) // there is a spot..
 					{
-						if( ( DRCT()%2 == 0 && spotitr->second.rt == 1) || ( DRCT()%2 == 1 && spotitr->second.lt == 1 ) )
-						break;
+						if( ( DRCT()%2 == 0 && spotitr->second.rt == 1) || ( DRCT()%2 == 1 && spotitr->second.lt == 1 ) )	break;
 						else// not occupied, update newx, newy..	
 						{
 							newy = tmpy, newx = tmpx;	
@@ -158,7 +157,6 @@ class CAR
 	{
 		if( newx != X() || newy != Y() )
 		{
-
 			map<int, LR>::iterator spotitr;
 		
 			if (DRCT()%2 == 0) // east or north.. second[1] will be changed..

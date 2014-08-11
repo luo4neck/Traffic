@@ -22,14 +22,11 @@ int main()
 	{
 		CROSS crs;
 		crs.NSred = 1;
-		crs.EWred = 1;
+		crs.EWred = 0;
 		cross.insert( pair<int, CROSS> (XYtoKEY( crossx, crossy), crs) );
 	}
 
-	cout<<cross[ XYtoKEY(crossx, crossy) ].NSred;
-	cout<<cross[ XYtoKEY(crossx, crossy) ].EWred;
-
-	for(int i=0; i<40; ++i) // constructing the map..
+	for(int i=0; i<40; ++i) // constructing the map on x axis..
 	{
 		if ( i != crossx )
 		{
@@ -39,8 +36,8 @@ int main()
 			spot.insert( pair<int, LR> ( XYtoKEY( i, 5), space));
 		}
 	}
-	/*
-	for(int i=0; i<40; ++i) // constructing the map..
+	
+	for(int i=0; i<40; ++i) // constructing the map on y axis..
 	{
 		if ( i != crossy )
 		{
@@ -50,10 +47,9 @@ int main()
 			spot.insert( pair<int, LR> ( XYtoKEY( 25, i), space));
 		}
 	}
-*/
 
 	srand48(time(NULL));
-	for(int i=0; i<6; ++i) // constructing the cars..
+	for(int i=0; i<2; ++i) // constructing the cars..
 	{
 		double random = drand48();
 		int drct = 0;
@@ -65,21 +61,23 @@ int main()
 */	
 		int X;
 		if (i<3) X = i, drct = 0;
-		else	 X = i*4+25, drct = 1;
+		else	 X = i*4+10, drct = 1;
 		CAR newcar(X, 5, drct);
 		
-		if ( newcar.DRCT()%2 == 0)  // go to north or east..
-		spot[ XYtoKEY ( newcar.X(), newcar.Y() ) ].rt = 1; // make this spot to be occupied..
-		else						// goto west or south.. 
-		spot[ XYtoKEY ( newcar.X(), newcar.Y() ) ].lt = 1; // make this spot to be occupied..
-		
-		car.push_back(newcar);
+		spotitr = spot.find( XYtoKEY( newcar.X(), newcar.Y() ) );
+		if ( spotitr != spot.end() )
+		{
+			if ( newcar.DRCT()%2 == 0)  // go to north or east..
+			spot[ XYtoKEY ( newcar.X(), newcar.Y() ) ].rt = 1; // make this spot to be occupied..
+			else						// goto west or south.. 
+			spot[ XYtoKEY ( newcar.X(), newcar.Y() ) ].lt = 1; // make this spot to be occupied..
+			car.push_back(newcar);
+		}
 	}
 
 
-
 	int time_i = 0;
-	while(time_i < 9 ) // main loop.. one loop is one time step..
+	while(time_i < 7 ) // main loop.. one loop is one time step..
 	{
 		cout<<"At time "<<time_i<<endl;
 	
@@ -87,19 +85,17 @@ int main()
 		{
 			char turn = caritr->path[0];
 			int newx(0), newy(0);
-	cout<<"fine here"<<endl;
-	//		cout<<caritr->X()<<" "<<caritr->Y()<<endl;
+			cout<<"Car move"<<endl;
+			cout<<caritr->X()<<" "<<caritr->Y()<<endl;
 			caritr->space_detect(newx, newy, spot, cross, turn);
 			caritr->Move(newx, newy, spot);
-	//		cout<<caritr->X()<<" "<<caritr->Y()<<endl;
+			cout<<caritr->X()<<" "<<caritr->Y()<<endl;
 		}
-	
+/*	
 		for(spotitr = spot.begin(); spotitr != spot.end(); ++spotitr)
 		{
-		//	cout<<spotitr->first;
 			//if ( spotitr->second.lt == 1 || spotitr->second.rt == 1 )  cout<<"M ";
 			if ( spotitr->second.lt == 1 )  cout<<"M ";
-			//else	if ( spotitr->second.rt == 1 )  cout<<"M ";
 			else 							cout<<"_ ";
 		}
 		cout<<" <- forward west"<<endl;
@@ -110,8 +106,8 @@ int main()
 			else 							cout<<"_ ";
 		}
 		cout<<" -> forward east"<<endl;
+*/		
 		cout<<endl;
-		
 		time_i++;
 	}
 
