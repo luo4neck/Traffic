@@ -12,13 +12,14 @@
 using namespace std;
 
 struct LR
-// used to construct the spot map..
+// used to construct the spot of map..
 {
 	bool lt;
 	bool rt;
 };
 
 struct CROSS
+// used to construct the cross of  map..
 {
 	bool NSred;
 	bool EWred;
@@ -176,22 +177,79 @@ class CAR
 	}
 };
 
+/*  upside is class CAR, down side is class BOUND */
+
 class BOUND
 // this class will be used to define the boundray of a subregion of a map..
 {
 	private:
 	// const int nt, st, et, wt;
-	int nt, st, et, wt;
-	
+	const int nt, st, et, wt;
+	int *EWpnt, *NSpnt;  // points where have a road..
+	const int EWnum, NSnum;
 	public:
 	
-	BOUND( int E, int W, int N, int S): nt(N), st(S), et(E), wt(W)
-	{ }
+	BOUND( int E, int W, int N, int S, int EWNUM, int NSNUM, int *EWRANGE, int *NSRANGE):  
+			nt(N), st(S), et(E), wt(W), EWnum(EWNUM), NSnum(NSNUM)
+	{
+		int *EWpnt = new int[EWnum];
+		int *NSpnt = new int[NSnum];
+		for( int i=0; i<EWnum; ++i)	{	EWpnt[i] = EWRANGE[i]; cout<<i<<" "<<EWpnt[i]<<endl; }
+		for( int i=0; i<NSnum; ++i)	{	NSpnt[i] = NSRANGE[i]; cout<<i<<" "<<NSpnt[i]<<endl; }
+	}
 
-	~BOUND() {}
+	~BOUND() 
+	{
+		delete[] EWpnt;
+		delete[] NSpnt;
+	}
 
 	const int Et() { return et; }
 	const int Wt() { return wt; }
 	const int Nt() { return nt; }
 	const int St() { return st; }
+
+	void Construct(map<int, LR> &spot, map<int, CROSS> &cross)
+	{
+		// cross part..
+		for(int i=0; i<EWnum; ++i)
+		{
+			for(int j=0; j<NSnum; ++j)
+			{
+				cout<<i<<" "<<j<<endl;
+				cout<<EWpnt[i]<<" "<<NSpnt[i]<<endl; // STRANGE !!!!!!!!
+				
+				int x = EWpnt[i];
+				int y = NSpnt[j];
+				cout<<x<<" "<<y<<endl;
+				
+				CROSS crs;
+				crs.NSred = 0;
+				crs.EWred = 1;
+			    cross.insert( pair<int, CROSS> (XYtoKEY(x, y), crs) );
+		
+			}
+		}
+
+			cout<<"fine here"<<endl;
+
+		map<int, CROSS>::iterator citr;
+		int count = 0;
+		for(citr = cross.begin(); citr != cross.end(); ++citr)
+		{
+			count++;
+			cout<<citr->second.NSred<<" "<<citr->second.EWred<<" "<<count<<endl;
+		}
+
+		// ns part..
+		
+		
+		// ew part..
+	
+	
+	}
+
+
+
+
 };
