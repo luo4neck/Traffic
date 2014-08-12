@@ -192,8 +192,8 @@ class BOUND
 	BOUND( int E, int W, int N, int S, int EWNUM, int NSNUM, int *EWRANGE, int *NSRANGE):  
 			nt(N), st(S), et(E), wt(W), EWnum(EWNUM), NSnum(NSNUM)
 	{
-		int *EWpnt = new int[EWnum];
-		int *NSpnt = new int[NSnum];
+		EWpnt = new int[EWnum];
+		NSpnt = new int[NSnum];
 		for( int i=0; i<EWnum; ++i)	{	EWpnt[i] = EWRANGE[i]; cout<<i<<" "<<EWpnt[i]<<endl; }
 		for( int i=0; i<NSnum; ++i)	{	NSpnt[i] = NSRANGE[i]; cout<<i<<" "<<NSpnt[i]<<endl; }
 	}
@@ -216,8 +216,8 @@ class BOUND
 		{
 			for(int j=0; j<NSnum; ++j)
 			{
-				cout<<i<<" "<<j<<endl;
-				cout<<EWpnt[i]<<" "<<NSpnt[i]<<endl; // STRANGE !!!!!!!!
+				//cout<<i<<" "<<j<<endl;
+				//cout<<EWpnt[i]<<" "<<NSpnt[i]<<endl; // STRANGE !!!!!!!!
 				
 				int x = EWpnt[i];
 				int y = NSpnt[j];
