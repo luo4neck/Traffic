@@ -175,3 +175,23 @@ class CAR
 		}
 	}
 };
+
+class BOUND
+// this class will be used to define the boundray of a subregion of a map..
+{
+	private:
+	// const int nt, st, et, wt;
+	int nt, st, et, wt;
+	
+	public:
+	
+	BOUND( int E, int W, int N, int S): nt(N), st(S), et(E), wt(W)
+	{ }
+
+	~BOUND() {}
+
+	const int Et() { return et; }
+	const int Wt() { return wt; }
+	const int Nt() { return nt; }
+	const int St() { return st; }
+};
