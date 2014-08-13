@@ -9,7 +9,18 @@
 using namespace std;
 
 const int car_num = 1;
-
+const double p_randomization= 0.05;
+/*
+void Signal_Switch(map<int, CROSS> &cross)
+{
+	map<int, CROSS>:: iterator itr;
+	for( itr = cross.begin(); itr != cross.end(); ++itr)
+	{
+		itr->second.NSred = !itr->second.NSred;
+		itr->second.EWred = !itr->second.EWred;
+	}
+}
+*/
 int main()
 {
 	map<int, LR> spot;
@@ -43,10 +54,6 @@ int main()
 		else 					drct = 3;
 		drct = 0;
 
-		//int X;
-		//if (i<3) X = i, drct = 0;
-		//else	 X = i*4+10, drct = 1;
-		
 		CAR newcar(21, 25, drct);
 		
 		spotitr = spot.find( XYtoKEY( newcar.X(), newcar.Y() ) );
@@ -60,24 +67,22 @@ int main()
 		}
 	}
 	
-	// session 3..
-	ofstream file("plot.dat");
+	ofstream file("plot.dat");// session 3..
 	
-	// session 3..
-	
-	int time_i = 0, time_max = 30;
+	int time_i = 0, time_max = 40;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
+		if ( time_i %10 == 0 ) Signal_Switch(cross);
 		//cout<<"At time "<<time_i<<endl;
 	
 		for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
 		{
 			char turn = caritr->path[0];
 			int newx(0), newy(0);
-			//cout<<"Car move"<<endl;
-//			cout<<caritr->X()<<" "<<caritr->Y()<<endl;
+			bool rand = 1; // deal with the randomization..
+			if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
 			
-			caritr->space_detect(newx, newy, spot, cross, turn);
+			caritr->space_detect(rand, newx, newy, spot, cross, turn);
 			caritr->Move(newx, newy, spot);
 		//	cout<<caritr->X()<<" "<<caritr->Y()<<endl;
 			file<<caritr->X()<<" "<<caritr->Y()<<endl;
@@ -86,7 +91,7 @@ int main()
 	}
 	file.close();
    	
-	
+	// session 3..
 	FILE *gp = popen("gnuplot -persist", "w");
    	if(gp == NULL)
 	{
@@ -97,6 +102,7 @@ int main()
 	fprintf(gp, "set yrange[0: 100]\n");
 	fprintf(gp, "plot 'plot.dat' u 1:2 w points, 'plot_road.dat' u 1:2 w points\n");
 	fclose(gp);
-
+	// session 3..
+	
 	return 0;
 }

@@ -22,20 +22,15 @@ struct CROSS
 	bool EWred;
 };
 
-void print(map<int, LR> spot)
-{
-	map<int, LR>:: iterator itr;
-	for(itr = spot.begin(); itr != spot.end(); ++itr)
-	{
-			cout<<itr->second.lt<<" ";
+void Signal_Switch(map<int, CROSS> &cross) 
+// change NSred and EWred to do signal switch..
+{   
+	map<int, CROSS>:: iterator itr;
+	for( itr = cross.begin(); itr != cross.end(); ++itr)
+	{   
+		itr->second.NSred = !itr->second.NSred;
+		itr->second.EWred = !itr->second.EWred;
 	}
-	cout<<endl;
-	
-	for(itr = spot.begin(); itr != spot.end(); ++itr)
-	{
-			cout<<itr->second.rt<<" ";
-	}
-	cout<<endl;
 }
 
 int XYtoKEY(int x, int y)
@@ -98,55 +93,58 @@ class CAR
 	const int DRCT()
 	{ return drct; }
 
-	void space_detect(int &newx, int &newy, map<int, LR> spot, map<int, CROSS> cross, const char turn)
+	void space_detect(bool rand, int &newx, int &newy, map<int, LR> spot, map<int, CROSS> cross, const char turn)
 	{
 		map<int, CROSS>:: iterator crsitr;
 		map<int, LR>:: iterator spotitr;
 		newx = X(), newy = Y();
-
-		for( int i=0; i<5; ++i) // detect 5 spots maxism..
+		
+		if(rand) // rand == 1 means no randomization.. else finish the function..
 		{
-			int tmpx = newx, tmpy = newy;
-			if ( DRCT() == EAST ) 		tmpx = newx + 1;
-			else if ( DRCT() == WEST )  tmpx = newx - 1;
-			else if ( DRCT() == NORTH ) tmpy = newy + 1;
-			else 						tmpy = newy - 1; // south..
+			for( int i=0; i<5; ++i) // detect 5 spots maxism..
+			{
+				int tmpx = newx, tmpy = newy;
+				if ( DRCT() == EAST ) 		tmpx = newx + 1;
+				else if ( DRCT() == WEST )  tmpx = newx - 1;
+				else if ( DRCT() == NORTH ) tmpy = newy + 1;
+				else 						tmpy = newy - 1; // south..
 			
-			spotitr = spot.find	( XYtoKEY(tmpx, tmpy) );
-			crsitr  = cross.find( XYtoKEY(tmpx, tmpy) );
-			if ( spotitr != spot.end() ) // there is a spot..
-			{
-				if( ( DRCT()%2 == 0 && spotitr->second.rt == 1) || ( DRCT()%2 == 1 && spotitr->second.lt == 1 ) )
-				// go north or east && right side of road is ocpd || go west or south && left side of road is ocpd..
-				break;
-				else	{	newy = tmpy, newx = tmpx;	} // not occupied..	
-			}
-			else if ( crsitr != cross.end() ) // this is a cross 
-			{
-				if ( (DRCT() < 2 && crsitr->second.EWred == 1) || (DRCT() >1 && crsitr->second.NSred == 1) ) break;
-				// west or east && ew red light is on 		 ||  north or south && ns red light is on
-				else
+				spotitr = spot.find	( XYtoKEY(tmpx, tmpy) );
+				crsitr  = cross.find( XYtoKEY(tmpx, tmpy) );
+				if ( spotitr != spot.end() ) // there is a spot..
 				{
-					int tmpdrct = Turn(DRCT(), turn);
-					if( tmpdrct == EAST ) 	  tmpx = tmpx + 1;
-					else if (tmpdrct == WEST) tmpx = tmpx - 1;
-					else if (tmpdrct == NORTH)tmpy = tmpy + 1;
-					else					  tmpy = tmpy - 1;
-
-					spotitr = spot.find	( XYtoKEY(tmpx, tmpy) );
-					if ( spotitr != spot.end() ) // there is a spot..
+					if( ( DRCT()%2 == 0 && spotitr->second.rt == 1) || ( DRCT()%2 == 1 && spotitr->second.lt == 1 ) )
+					// go north or east && right side of road is ocpd || go west or south && left side of road is ocpd..
+					break;
+					else	{	newy = tmpy, newx = tmpx;	} // not occupied..	
+				}
+				else if ( crsitr != cross.end() ) // this is a cross 
+				{
+					if ( (DRCT() < 2 && crsitr->second.EWred == 1) || (DRCT() >1 && crsitr->second.NSred == 1) ) break;
+					// west or east && ew red light is on 		 ||  north or south && ns red light is on
+					else
 					{
-						if( ( DRCT()%2 == 0 && spotitr->second.rt == 1) || ( DRCT()%2 == 1 && spotitr->second.lt == 1 ) )	break;
-						else// not occupied, update newx, newy..	
+						int tmpdrct = Turn(DRCT(), turn);
+						if( tmpdrct == EAST ) 	  tmpx = tmpx + 1;
+						else if (tmpdrct == WEST) tmpx = tmpx - 1;
+						else if (tmpdrct == NORTH)tmpy = tmpy + 1;
+						else					  tmpy = tmpy - 1;
+
+						spotitr = spot.find	( XYtoKEY(tmpx, tmpy) );
+						if ( spotitr != spot.end() ) // there is a spot..
 						{
-							newy = tmpy, newx = tmpx;	
-							drct = tmpdrct;
-							path.erase(0, 1);
-						} 
+							if( ( DRCT()%2 == 0 && spotitr->second.rt == 1) || ( DRCT()%2 == 1 && spotitr->second.lt == 1 ) )	break;
+							else// not occupied, update newx, newy..	
+							{
+								newy = tmpy, newx = tmpx;	
+								drct = tmpdrct;
+								path.erase(0, 1);
+							} 
+						}
 					}
 				}
+				else break;
 			}
-			else break;
 		}
 	}
 
