@@ -190,8 +190,8 @@ class BOUND
 	{
 		EWpnt = new int[EWnum];
 		NSpnt = new int[NSnum];
-		for( int i=0; i<EWnum; ++i)	{	EWpnt[i] = EWRANGE[i]; cout<<i<<" "<<EWpnt[i]<<endl; }
-		for( int i=0; i<NSnum; ++i)	{	NSpnt[i] = NSRANGE[i]; cout<<i<<" "<<NSpnt[i]<<endl; }
+		for( int i=0; i<EWnum; ++i)	{	EWpnt[i] = EWRANGE[i];}
+		for( int i=0; i<NSnum; ++i)	{	NSpnt[i] = NSRANGE[i];}
 	}
 
 	~BOUND() 
@@ -212,40 +212,60 @@ class BOUND
 		{
 			for(int j=0; j<NSnum; ++j)
 			{
-				//cout<<i<<" "<<j<<endl;
-				//cout<<EWpnt[i]<<" "<<NSpnt[i]<<endl; // STRANGE !!!!!!!!
-				
 				int x = EWpnt[i];
 				int y = NSpnt[j];
-				cout<<x<<" "<<y<<endl;
 				
 				CROSS crs;
 				crs.NSred = 0;
 				crs.EWred = 1;
 			    cross.insert( pair<int, CROSS> (XYtoKEY(x, y), crs) );
-		
 			}
 		}
 
-			cout<<"fine here"<<endl;
-
 		map<int, CROSS>::iterator citr;
-		int count = 0;
-		for(citr = cross.begin(); citr != cross.end(); ++citr)
-		{
-			count++;
-			cout<<citr->second.NSred<<" "<<citr->second.EWred<<" "<<count<<endl;
-		}
-
-		// ns part..
+		map<int, LR>::iterator sitr;
 		
+		// ns part..
+		for( int i = 0; i<NSnum; ++i)
+		{
+			const int y = NSpnt[i];
+			for(int j = Wt(); j <= Et(); ++j)
+			{
+				int x = j;
+				citr = cross.find( XYtoKEY(x, y));
+				if( citr == cross.end())
+				{
+					LR space;
+					space.lt = 0;
+					space.rt = 0;
+					spot.insert(pair<int, LR> ( XYtoKEY(x, y) , space));
+				}
+			}
+		}
 		
 		// ew part..
-	
-	
+		for(int i=0; i<EWnum; ++i)
+		{
+			const int x = EWpnt[i];
+			for(int j = St(); j <= Nt(); ++j )
+			{
+				int y = j;
+				citr = cross.find( XYtoKEY (x, y));
+				if (citr == cross.end())
+				{
+					LR space;
+					space.lt = 0;
+					space.rt = 0;
+					spot.insert(pair<int, LR> ( XYtoKEY(x, y) , space));
+				}
+			}
+		}
+	/*	
+		for( sitr = spot.begin(); sitr != spot.end(); ++sitr)
+		{
+			cout<<sitr->first<<" "<<sitr->second.lt<<" "<<sitr->second.rt<<endl;
+		}
+		*/
 	}
-
-
-
 
 };

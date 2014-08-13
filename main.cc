@@ -25,40 +25,11 @@ int main()
 	_nsrange[0] = 25, _nsrange[1] = 50, _nsrange[2] = 75;
 	BOUND bound(100, 0, 100, 0, _ewnum, _nsnum, _ewrange, _nsrange);
 	
-	bound.Construct(spot, cross);
+	bound.Construct(spot, cross); // construct the map in this process..
 	// session 3
-/*
-	{
-		CROSS crs;
-		crs.NSred = 1;
-		crs.EWred = 0;
-		cross.insert( pair<int, CROSS> (XYtoKEY( crossx, crossy), crs) );
-	}
-
-	for(int i=bound.Wt(); i<bound.Et(); ++i) // constructing the map on x axis..
-	{
-		if ( i != crossx )
-		{
-			LR space;
-			space.lt = 0; // left side of the spot..
-			space.rt = 0;// right side of the spot..
-			spot.insert( pair<int, LR> ( XYtoKEY( i, crossy), space));
-		}
-	}
 	
-	for(int i=bound.St(); i<=bound.Nt(); ++i) // constructing the map on y axis..
-	{
-		if ( i != crossy )
-		{
-			LR space;
-			space.lt = 0; // left side of the spot..
-			space.rt = 0;// right side of the spot..
-			spot.insert( pair<int, LR> ( XYtoKEY( crossx, i), space));
-		}
-	}
-*/
 	srand48(time(NULL));
-	for(int i=0; i<1; ++i) // constructing the cars..
+	for(int i=0; i<1; ++i) // constructing the cars in this process..
 	{
 		double random = drand48();
 		int drct = 0;
@@ -83,10 +54,9 @@ int main()
 			car.push_back(newcar);
 		}
 	}
-
+	
 	
 	int time_i = 0, time_max = 0;
-	
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		//cout<<"At time "<<time_i<<endl;
