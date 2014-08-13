@@ -10,17 +10,7 @@ using namespace std;
 
 const int car_num = 15;
 const double p_randomization= 0.05;
-/*
-void Signal_Switch(map<int, CROSS> &cross)
-{
-	map<int, CROSS>:: iterator itr;
-	for( itr = cross.begin(); itr != cross.end(); ++itr)
-	{
-		itr->second.NSred = !itr->second.NSred;
-		itr->second.EWred = !itr->second.EWred;
-	}
-}
-*/
+
 int main()
 {
 	map<int, LR> spot;
@@ -68,25 +58,23 @@ int main()
 	}
 	
 	
-	int time_i = 0, time_max = 70;
+	int time_i = 0, time_max = 50;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		ofstream file("plot.dat");// session 3..
 		
-		//if ( time_i%5 == 0 ) Signal_Switch(cross);
+		if ( time_i%10 == 0 ) Signal_Switch(cross);
 		//cout<<"At time "<<time_i<<endl;
-		//cout<<cross[ 60, 75].NSred<<" "<<cross[60, 75].EWred<<endl;
 
 		for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
 		{
 			char turn = caritr->path[0];
-			int newx(0), newy(0);
+			int newx(0), newy(0), newdrct(0);
 			bool rand = 1; // deal with the randomization..
 			if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
 			
-			caritr->space_detect(rand, newx, newy, spot, cross, turn);
-			caritr->Move(newx, newy, spot);
-		//	cout<<caritr->X()<<" "<<caritr->Y()<<endl;
+			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
+			caritr->Move(newx, newy, newdrct, spot);
 			file<<caritr->X()<<" "<<caritr->Y()<<endl;
 		}
 	
@@ -99,7 +87,7 @@ int main()
 			exit(0);
 		}
 		fprintf(gp, "set terminal png\n");
-		fprintf(gp, "set output '%2d.png'\n", time_i + 10);
+		fprintf(gp, "set output '%d.png'\n", time_i + 10);
 //		fprintf(gp, "set key font ',10'\n");
 		fprintf(gp, "set title 'Time step %d'\n", time_i);
 		fprintf(gp, "set xrange[%d: %d]\n", bound.Wt(), bound.Et() );
@@ -110,8 +98,8 @@ int main()
 		
 		time_i++;
 	}
-	
-	system("convert -delay 25 -loop 0 *.png moving.gif\n");	// session 3..
+
+	system("convert -delay 25 -loop 0 *.png Moving.gif\n");	// session 3..
 	
 	return 0;
 }

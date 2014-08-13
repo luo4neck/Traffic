@@ -93,12 +93,13 @@ class CAR
 	const int DRCT()
 	{ return drct; }
 
-	void space_detect(bool rand, int &newx, int &newy, map<int, LR> spot, map<int, CROSS> cross, const char turn)
+	void space_detect(bool rand, int &newx, int &newy, int &newdrct, map<int, LR> spot, map<int, CROSS> cross, const char turn)
 	{
 		map<int, CROSS>:: iterator crsitr;
 		map<int, LR>:: iterator spotitr;
 		newx = X(), newy = Y();
-		
+		newdrct = DRCT();
+
 		if(rand) // rand == 1 means no randomization.. else finish the function..
 		{
 			for( int i=0; i<5; ++i) // detect 5 spots maxism..
@@ -136,8 +137,9 @@ class CAR
 							if( ( DRCT()%2 == 0 && spotitr->second.rt == 1) || ( DRCT()%2 == 1 && spotitr->second.lt == 1 ) )	break;
 							else// not occupied, update newx, newy..	
 							{
-								newy = tmpy, newx = tmpx;	
-								drct = tmpdrct;
+								newy = tmpy; 
+								newx = tmpx;	
+								newdrct = tmpdrct;
 								path.erase(0, 1);
 							} 
 						}
@@ -148,26 +150,20 @@ class CAR
 		}
 	}
 
-	void Move(const int newx, const int newy, map<int, LR> &spot)
+	void Move(const int newx, const int newy, const int newdrct, map<int, LR> &spot)
 	// move from one spot to another spot..
 	{
 		if( newx != X() || newy != Y() )
 		{
-			map<int, LR>::iterator spotitr;
-		
-			if (DRCT()%2 == 0) // east or north.. second[1] will be changed..
-			{
-				spot[ XYtoKEY( X(), Y() ) ].rt = 0;
-				spot[ XYtoKEY(newx, newy) ].rt = 1;
-			}
-			else				// west or south.. second[0] will be changed..
-			{
-				spot[ XYtoKEY( X(), Y() ) ].lt = 0;
-				spot[ XYtoKEY(newx, newy) ].lt = 1;
-			}
+			if (DRCT()%2 == 0) 	{	spot[ XYtoKEY( X(), Y() ) ].rt = 0;	}// east or north.. 
+			else				{	spot[ XYtoKEY( X(), Y() ) ].lt = 0;	}// west or south.. 	
+			
+			if (newdrct%2 == 0 ){	spot[ XYtoKEY(newx, newy) ].rt = 1;	}
+			else 				{	spot[ XYtoKEY(newx, newy) ].lt = 1;	}
 
-		x=newx;
-		y=newy;
+			x = newx;
+			y = newy;
+			drct = newdrct;
 		}
 	}
 };
@@ -218,7 +214,7 @@ class BOUND
 				file<<x<<" "<<y<<endl;//session 3..;
 
 				CROSS crs;
-				crs.NSred = 0;
+				crs.NSred = 1;
 				crs.EWred = 0;
 			    cross.insert( pair<int, CROSS> (XYtoKEY(x, y), crs) );
 			}
@@ -267,12 +263,6 @@ class BOUND
 			}
 		}
 		file.close();
-	/*	
-		for( sitr = spot.begin(); sitr != spot.end(); ++sitr)
-		{
-			cout<<sitr->first<<" "<<sitr->second.lt<<" "<<sitr->second.rt<<endl;
-		}
-		*/
 	}
 
 };
