@@ -7,9 +7,6 @@
 
 using namespace std;
 
-//const int crossx = 25;
-//const int crossy = 25;
-
 int main()
 {
 	map<int, LR> spot;
