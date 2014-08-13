@@ -8,7 +8,7 @@
 
 using namespace std;
 
-const int car_num = 1;
+const int car_num = 15;
 const double p_randomization= 0.05;
 /*
 void Signal_Switch(map<int, CROSS> &cross)
@@ -54,7 +54,7 @@ int main()
 		else 					drct = 3;
 		drct = 0;
 
-		CAR newcar(21, 25, drct);
+		CAR newcar(21 + i, 25, drct);
 		
 		spotitr = spot.find( XYtoKEY( newcar.X(), newcar.Y() ) );
 		if ( spotitr != spot.end() )
@@ -67,14 +67,16 @@ int main()
 		}
 	}
 	
-	ofstream file("plot.dat");// session 3..
 	
-	int time_i = 0, time_max = 40;
+	int time_i = 0, time_max = 70;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
-		if ( time_i %10 == 0 ) Signal_Switch(cross);
+		ofstream file("plot.dat");// session 3..
+		
+		//if ( time_i%5 == 0 ) Signal_Switch(cross);
 		//cout<<"At time "<<time_i<<endl;
-	
+		//cout<<cross[ 60, 75].NSred<<" "<<cross[60, 75].EWred<<endl;
+
 		for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
 		{
 			char turn = caritr->path[0];
@@ -87,22 +89,29 @@ int main()
 		//	cout<<caritr->X()<<" "<<caritr->Y()<<endl;
 			file<<caritr->X()<<" "<<caritr->Y()<<endl;
 		}
+	
+		// session 3..
+		file.close();
+		FILE *gp = popen("gnuplot -persist", "w");
+   		if(gp == NULL)
+		{
+			printf("Cannot plot the data!\n");
+			exit(0);
+		}
+		fprintf(gp, "set terminal png\n");
+		fprintf(gp, "set output '%2d.png'\n", time_i + 10);
+//		fprintf(gp, "set key font ',10'\n");
+		fprintf(gp, "set title 'Time step %d'\n", time_i);
+		fprintf(gp, "set xrange[%d: %d]\n", bound.Wt(), bound.Et() );
+		fprintf(gp, "set yrange[%d: %d]\n", bound.St(), bound.Nt() );
+		fprintf(gp, "plot 'plot.dat' u 1:2 title 'Cars' w points, 'plot_road.dat' u 1:2 title 'Road Spot' w points\n");
+		fclose(gp);
+		// session 3..
+		
 		time_i++;
 	}
-	file.close();
-   	
-	// session 3..
-	FILE *gp = popen("gnuplot -persist", "w");
-   	if(gp == NULL)
-	{
-		printf("Cannot plot the data!\n");
-		exit(0);
-	}
-	fprintf(gp, "set xrange[0: 100]\n");
-	fprintf(gp, "set yrange[0: 100]\n");
-	fprintf(gp, "plot 'plot.dat' u 1:2 w points, 'plot_road.dat' u 1:2 w points\n");
-	fclose(gp);
-	// session 3..
+	
+	system("convert -delay 25 -loop 0 *.png moving.gif\n");	// session 3..
 	
 	return 0;
 }

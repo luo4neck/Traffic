@@ -24,7 +24,7 @@ struct CROSS
 
 void Signal_Switch(map<int, CROSS> &cross) 
 // change NSred and EWred to do signal switch..
-{   
+{
 	map<int, CROSS>:: iterator itr;
 	for( itr = cross.begin(); itr != cross.end(); ++itr)
 	{   
