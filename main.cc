@@ -1,11 +1,14 @@
 #include<map>
 #include<string>
 #include<iostream>
+#include<fstream> // plot..
 #include<stdlib.h>
 #include<stdio.h>
 #include "head.hpp"
 
 using namespace std;
+
+const int car_num = 1;
 
 int main()
 {
@@ -29,20 +32,22 @@ int main()
 	// session 3
 	
 	srand48(time(NULL));
-	for(int i=0; i<1; ++i) // constructing the cars in this process..
+	for(int i=0; i < car_num; ++i) // constructing the cars in this process..
 	{
 		double random = drand48();
 		int drct = 0;
-		/*
+		
 		if (random < 0.25 ) 	drct = 0;
 		else if (random < 0.5 ) drct = 1;
 		else if (random < 0.75) drct = 2;
 		else 					drct = 3;
-*/	
-		int X;
-		if (i<3) X = i, drct = 0;
-		else	 X = i*4+10, drct = 1;
-		CAR newcar(X, X, drct);
+		drct = 0;
+
+		//int X;
+		//if (i<3) X = i, drct = 0;
+		//else	 X = i*4+10, drct = 1;
+		
+		CAR newcar(21, 25, drct);
 		
 		spotitr = spot.find( XYtoKEY( newcar.X(), newcar.Y() ) );
 		if ( spotitr != spot.end() )
@@ -55,8 +60,12 @@ int main()
 		}
 	}
 	
+	// session 3..
+	ofstream file("plot.dat");
 	
-	int time_i = 0, time_max = 0;
+	// session 3..
+	
+	int time_i = 0, time_max = 30;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		//cout<<"At time "<<time_i<<endl;
@@ -70,27 +79,24 @@ int main()
 			
 			caritr->space_detect(newx, newy, spot, cross, turn);
 			caritr->Move(newx, newy, spot);
-			//cout<<caritr->X()<<" "<<caritr->Y()<<endl;
+		//	cout<<caritr->X()<<" "<<caritr->Y()<<endl;
+			file<<caritr->X()<<" "<<caritr->Y()<<endl;
 		}
-/*	
-		for(spotitr = spot.begin(); spotitr != spot.end(); ++spotitr)
-		{
-			//if ( spotitr->second.lt == 1 || spotitr->second.rt == 1 )  cout<<"M ";
-			if ( spotitr->second.lt == 1 )  cout<<"M ";
-			else 							cout<<"_ ";
-		}
-		cout<<" <- forward west"<<endl;
-		for(spotitr = spot.begin(); spotitr != spot.end(); ++spotitr)
-		{
-	//		cout<<spotitr->first<<" ";
-			if ( spotitr->second.rt == 1 )  cout<<"M ";
-			else 							cout<<"_ ";
-		}
-		cout<<" -> forward east"<<endl;
-		cout<<endl;
-*/		
 		time_i++;
 	}
+	file.close();
+   	
+	
+	FILE *gp = popen("gnuplot -persist", "w");
+   	if(gp == NULL)
+	{
+		printf("Cannot plot the data!\n");
+		exit(0);
+	}
+	fprintf(gp, "set xrange[0: 100]\n");
+	fprintf(gp, "set yrange[0: 100]\n");
+	fprintf(gp, "plot 'plot.dat' u 1:2 w points, 'plot_road.dat' u 1:2 w points\n");
+	fclose(gp);
 
 	return 0;
 }

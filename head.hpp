@@ -1,6 +1,7 @@
 #include<list>
 #include<map>
 #include<iostream>
+#include<fstream>
 #include<string>
 #include<stdlib.h>
 #include "def.hpp"
@@ -41,7 +42,7 @@ int XYtoKEY(int x, int y)
 // translate x and y into spot key..
 // both x and y should not be larger than 99999, to ensure the unique of translated key value..
 {
-	if (x>99999 || y>99999) 
+	if ( x<0 || y<0 || x>99999 || y>99999) 
 	{
 		printf("input is wrong!");
 		exit(-1);
@@ -83,7 +84,7 @@ class CAR
 		x = X;
 		y = Y;
 		drct = DRCT;
-		path = "l";
+		path = "slslslslsls";
 	}
 
 	~CAR() {}
@@ -207,6 +208,7 @@ class BOUND
 
 	void Construct(map<int, LR> &spot, map<int, CROSS> &cross)
 	{
+		ofstream file("plot_road.dat"); //session 3..
 		// cross part..
 		for(int i=0; i<EWnum; ++i)
 		{
@@ -215,9 +217,11 @@ class BOUND
 				int x = EWpnt[i];
 				int y = NSpnt[j];
 				
+				file<<x<<" "<<y<<endl;//session 3..;
+
 				CROSS crs;
 				crs.NSred = 0;
-				crs.EWred = 1;
+				crs.EWred = 0;
 			    cross.insert( pair<int, CROSS> (XYtoKEY(x, y), crs) );
 			}
 		}
@@ -240,6 +244,8 @@ class BOUND
 					space.rt = 0;
 					spot.insert(pair<int, LR> ( XYtoKEY(x, y) , space));
 				}
+				
+				file<<x<<" "<<y<<endl;//session 3..;
 			}
 		}
 		
@@ -258,8 +264,11 @@ class BOUND
 					space.rt = 0;
 					spot.insert(pair<int, LR> ( XYtoKEY(x, y) , space));
 				}
+				
+				file<<x<<" "<<y<<endl;//session 3..;
 			}
 		}
+		file.close();
 	/*	
 		for( sitr = spot.begin(); sitr != spot.end(); ++sitr)
 		{
