@@ -1,9 +1,3 @@
-#include<list>
-#include<map>
-#include<iostream>
-#include<fstream>
-#include<string>
-#include<stdlib.h>
 #include "def.hpp"
 
 using namespace std;
@@ -71,15 +65,17 @@ class CAR
 	int x;
 	int y;
 	public:
+	bool del; // 0 is not to be deleted, 1 is to be deleted..
 	int drct;
 	string path;
 
 	CAR(int X, int Y, int DRCT)
 	{
+		del = 0;
 		x = X;
 		y = Y;
 		drct = DRCT;
-		path = "slslslslsls";
+		path = "ssss";
 	}
 
 	~CAR() {}
@@ -99,19 +95,22 @@ class CAR
 		map<int, LR>:: iterator spotitr;
 		newx = X(), newy = Y();
 		newdrct = DRCT();
-
-		if(rand) // rand == 1 means no randomization.. else finish the function..
+		
+		if(	path.size() == 0 ) del = 1;
+		else if(rand) // rand == 1 means no randomization.. else finish the function..
 		{
 			for( int i=0; i<5; ++i) // detect 5 spots maxism..
 			{
 				int tmpx = newx, tmpy = newy;
-				if ( DRCT() == EAST ) 		tmpx = newx + 1;
-				else if ( DRCT() == WEST )  tmpx = newx - 1;
-				else if ( DRCT() == NORTH ) tmpy = newy + 1;
-				else 						tmpy = newy - 1; // south..
-			
+
+				if 		( newdrct == EAST )  tmpx = newx + 1;
+				else if ( newdrct == WEST )  tmpx = newx - 1;
+				else if ( newdrct == NORTH)  tmpy = newy + 1;
+				else 						 tmpy = newy - 1; // south..
+
 				spotitr = spot.find	( XYtoKEY(tmpx, tmpy) );
 				crsitr  = cross.find( XYtoKEY(tmpx, tmpy) );
+				
 				if ( spotitr != spot.end() ) // there is a spot..
 				{
 					if( ( DRCT()%2 == 0 && spotitr->second.rt == 1) || ( DRCT()%2 == 1 && spotitr->second.lt == 1 ) )
@@ -134,7 +133,7 @@ class CAR
 						spotitr = spot.find	( XYtoKEY(tmpx, tmpy) );
 						if ( spotitr != spot.end() ) // there is a spot..
 						{
-							if( ( DRCT()%2 == 0 && spotitr->second.rt == 1) || ( DRCT()%2 == 1 && spotitr->second.lt == 1 ) )	break;
+							if( ( tmpdrct%2 == 0 && spotitr->second.rt == 1) || ( tmpdrct%2 == 1 && spotitr->second.lt == 1 ) )	break;
 							else// not occupied, update newx, newy..	
 							{
 								newy = tmpy; 
@@ -145,7 +144,12 @@ class CAR
 						}
 					}
 				}
-				else break;
+				else // not cross, not spot, out of range.. 
+				{
+					//cout<<endl<<endl<<"hi"<<endl<<endl;
+					del = 1;
+					break;
+				}
 			}
 		}
 	}
@@ -166,6 +170,14 @@ class CAR
 			drct = newdrct;
 		}
 	}
+};
+
+class check_del
+// this function is used to delete cars with bool del==1..
+{
+	public:
+	bool operator() (const CAR &car)
+	{	return car.del;	}
 };
 
 /*  upside is class CAR, down side is class BOUND */

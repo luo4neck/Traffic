@@ -1,4 +1,11 @@
 // This file contains all hard definations
+#include<string>
+#include<map>
+#include<list>
+#include<fstream>
+#include<iostream>
+#include<stdlib.h>
+#include<stdio.h>
 
 #define EAST  0
 #define WEST  1
