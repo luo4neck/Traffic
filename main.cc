@@ -5,6 +5,33 @@ using namespace std;
 const int car_num = 15;
 const double p_randomization= 0.05;
 
+
+bool Car_Add_Congest(const int x,const int y,const int drct, map<int, LR> &spot, list<class CAR> &car)
+{
+	map<int, LR>:: iterator itr;
+	itr = spot.find( XYtoKEY(x, y) );
+	if ( itr == spot.end() ) return 0; // this is not a location..
+	else  // this location has a spot..
+	{
+		if ( drct%2 == 0 && itr->second.rt == 1) 	 return 0;// east or north..
+		else if (drct%2 == 1 && itr->second.lt == 1) return 0;// west or south..
+		else
+		{
+			CAR newcar(x, y, drct);
+			cout<<newcar.X()<<" "<<newcar.Y()<<endl;
+
+			if ( newcar.DRCT()%2 == 0)  // go to north or east..
+			spot[ XYtoKEY ( newcar.X(), newcar.Y() ) ].rt = 1; // make this spot to be occupied..
+			else						// goto west or south.. 
+			spot[ XYtoKEY ( newcar.X(), newcar.Y() ) ].lt = 1; // make this spot to be occupied..
+			
+			car.push_back(newcar);
+			
+			return 1;
+		}
+	}
+}
+
 int main()
 {
 	map<int, LR> spot;
@@ -36,26 +63,18 @@ int main()
 		else if (random < 0.5 ) drct = 1;
 		else if (random < 0.75) drct = 2;
 		else 					drct = 3;
-		drct = 0;
-
-		CAR newcar(21 + i, 50, drct);
-		
-		spotitr = spot.find( XYtoKEY( newcar.X(), newcar.Y() ) );
-		if ( spotitr != spot.end() )
-		{
-			if ( newcar.DRCT()%2 == 0)  // go to north or east..
-			spot[ XYtoKEY ( newcar.X(), newcar.Y() ) ].rt = 1; // make this spot to be occupied..
-			else						// goto west or south.. 
-			spot[ XYtoKEY ( newcar.X(), newcar.Y() ) ].lt = 1; // make this spot to be occupied..
-			car.push_back(newcar);
-		}
+	//	drct = 0;
 	}
-	
+		int congest_count = 0;
+		if ( Car_Add_Congest(0, 50, EAST, spot, car)) congest_count++;
+		if ( Car_Add_Congest(100, 50, WEST, spot, car)) congest_count++;
+		if ( Car_Add_Congest(50, 0, NORTH, spot, car)) congest_count++;
+		if ( Car_Add_Congest(50, 100, SOUTH, spot, car)) congest_count++;
 	
 	int time_i = 0, time_max = 50;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
-		ofstream file("plot.dat");// session 3..
+		ofstream file("plot_cars.dat");// session 3..
 		
 		if ( time_i%10 == 0 ) Signal_Switch(cross);
 		//cout<<"At time "<<time_i<<" "<<endl;
@@ -98,10 +117,19 @@ int main()
 		fprintf(gp, "set title 'Time step %d'\n", time_i);
 		fprintf(gp, "set xrange[%d: %d]\n", bound.Wt(), bound.Et() );
 		fprintf(gp, "set yrange[%d: %d]\n", bound.St(), bound.Nt() );
-		fprintf(gp, "plot 'plot.dat' u 1:2 title 'Cars' w points, 'plot_road.dat' u 1:2 title 'Road Spot' w points\n");
+		fprintf(gp, "plot 'plot_cars.dat' u 1:2 title 'Cars' w points, 'plot_road.dat' u 1:2 title 'Road Spot' w points\n");
 		fclose(gp);
 		// session 3..
+	
 		
+		int congest_count = 0;
+		if ( Car_Add_Congest(0, 50, EAST, spot, car)) congest_count++;
+		if ( Car_Add_Congest(100, 50, WEST, spot, car)) congest_count++;
+		if ( Car_Add_Congest(50, 0, NORTH, spot, car)) congest_count++;
+		if ( Car_Add_Congest(50, 100, SOUTH, spot, car)) congest_count++;
+		cout<<congest_count<<endl;
+		cout<<time_i<<endl;
+
 		time_i++;
 	}
 

@@ -12,4 +12,4 @@ test: all
 
 clean:
 #	rm *.o main
-	rm *.gif *.o *.png plot.dat plot_road.dat main
+	rm *.gif *.o *.png plot_cars.dat plot_road.dat main
