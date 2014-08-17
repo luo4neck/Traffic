@@ -6,6 +6,7 @@
 #include<iostream>
 #include<stdlib.h>
 #include<stdio.h>
+#include<time.h>
 
 #define EAST  0
 #define WEST  1
