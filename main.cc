@@ -5,30 +5,13 @@ using namespace std;
 const int car_num = 15;
 const double p_randomization= 0.15;
 
-bool Car_Add_Congest(const int x, const int y, const int drct, map<int, LR> &spot, list<class CAR> &car)
-// this function is used to do car congestion test..
+bool Car_Rand_Add(BOUND bound, map<int, LR> &spot, list<class CAR> &car)
 {
-	map<int, LR>:: iterator itr;
-	itr = spot.find( XYtoKEY(x, y) );
-	if ( itr == spot.end() ) return 0; // this is not a location..
-	else  // this location has a spot..
-	{
-		if ( drct%2 == 0 && itr->second.rt == 1) 	 return 0;// east or north..
-		else if (drct%2 == 1 && itr->second.lt == 1) return 0;// west or south..
-		else
-		{
-			CAR newcar(x, y, drct);
-			//cout<<newcar.X()<<" "<<newcar.Y()<<endl;
+	
 
-			if ( newcar.DRCT()%2 == 0)  // go to north or east..
-			itr->second.rt = 1;
-			else						// goto west or south.. 
-			itr->second.lt = 1;
-			
-			car.push_back(newcar);
-			return 1;
-		}
-	}
+
+
+	return 0;
 }
 
 int main()
@@ -64,16 +47,11 @@ int main()
 		else 					drct = 3;
 	//	drct = 0;
 	}
-		int congest_count = 0;
-		if ( Car_Add_Congest(0, 50, EAST, spot, car)) congest_count++;
-		if ( Car_Add_Congest(100, 50, WEST, spot, car)) congest_count++;
-		if ( Car_Add_Congest(50, 0, NORTH, spot, car)) congest_count++;
-		if ( Car_Add_Congest(50, 100, SOUTH, spot, car)) congest_count++;
 	
-	int time_i = 0, time_max = 250;
+	int time_i = 0, time_max = 100;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
-		ofstream file("plot_cars.dat");// session 3..
+		//ofstream file("plot_cars.dat");// session 3..
 		
 		if ( time_i%10 == 0 ) Signal_Switch(cross);
 		cout<<"At time "<<time_i<<" "<<endl;
@@ -88,10 +66,10 @@ int main()
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
 			caritr->Move(newx, newy, newdrct, spot);
 			//file<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->drct<<" "<<caritr->del<<endl;
-			file<<caritr->X()<<" "<<caritr->Y()<<endl;
+			//file<<caritr->X()<<" "<<caritr->Y()<<endl;
 		}
 	
-		if( time_i % 3 == 0 ) // !!!! decide how often to delete a car.. 
+		//if( time_i % 3 == 0 ) // !!!! decide how often to delete a car.. 
 		{
 			for(caritr = car.begin(); caritr != car.end(); ++caritr)
 			{
@@ -107,7 +85,8 @@ int main()
 		}
 		// session 3..
 		
-		file.close();
+		//file.close();
+		/*
 		FILE *gp = popen("gnuplot -persist", "w");
    		if(gp == NULL)
 		{
@@ -123,18 +102,11 @@ int main()
 		fprintf(gp, "plot 'plot_cars.dat' u 1:2 title 'Cars' w points, 'plot_road.dat' u 1:2 title 'Road Spot' w points\n");
 		fclose(gp);
 		// session 3..
-	
-		int congest_count = 0;
-		if ( Car_Add_Congest(0, 50, EAST, spot, car)) 	congest_count++;
-		if ( Car_Add_Congest(100, 50, WEST, spot, car)) congest_count++;
-		if ( Car_Add_Congest(50, 0, NORTH, spot, car)) 	congest_count++;
-		if ( Car_Add_Congest(50, 100, SOUTH, spot, car)) congest_count++;
-		cout<<endl<<congest_count<<" inserted into the map, totally "<<car.size()<<" cars"<<endl;
-
+	*/
 		time_i++;
 	}
 
-	system("convert -delay 25 -loop 0 *.png Moving.gif\n");	// session 3..
+	//system("convert -delay 25 -loop 0 *.png Moving.gif\n");	// session 3..
 	
 	return 0;
 }

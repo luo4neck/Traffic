@@ -278,3 +278,30 @@ class BOUND
 	}
 
 };
+
+/*  upside is class BOUND, down side are test code */
+
+bool Car_Add_Congest(const int x, const int y, const int drct, map<int, LR> &spot, list<class CAR> &car)
+// this function is used to do car congestion test..
+{
+ 	map<int, LR>:: iterator itr;
+ 	itr = spot.find( XYtoKEY(x, y) );
+ 	if ( itr == spot.end() ) return 0; // this is not a location..
+	else  // this location has a spot..
+ 	{
+		if ( drct%2 == 0 && itr->second.rt == 1) 	 return 0;// east or north..
+ 		else if (drct%2 == 1 && itr->second.lt == 1) return 0;// west or south..
+ 		else
+ 		{
+ 			CAR newcar(x, y, drct);
+
+ 			if ( newcar.DRCT()%2 == 0)  // go to north or east..
+ 			itr->second.rt = 1;
+ 			else						// goto west or south.. 
+ 			itr->second.lt = 1;
+ 			
+			car.push_back(newcar);
+ 			return 1;
+		}
+ 	}
+}
