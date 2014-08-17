@@ -3,10 +3,10 @@
 using namespace std;
 
 const int car_num = 15;
-const double p_randomization= 0.05;
+const double p_randomization= 0.15;
 
-
-bool Car_Add_Congest(const int x,const int y,const int drct, map<int, LR> &spot, list<class CAR> &car)
+bool Car_Add_Congest(const int x, const int y, const int drct, map<int, LR> &spot, list<class CAR> &car)
+// this function is used to do car congestion test..
 {
 	map<int, LR>:: iterator itr;
 	itr = spot.find( XYtoKEY(x, y) );
@@ -18,15 +18,14 @@ bool Car_Add_Congest(const int x,const int y,const int drct, map<int, LR> &spot,
 		else
 		{
 			CAR newcar(x, y, drct);
-			cout<<newcar.X()<<" "<<newcar.Y()<<endl;
+			//cout<<newcar.X()<<" "<<newcar.Y()<<endl;
 
 			if ( newcar.DRCT()%2 == 0)  // go to north or east..
-			spot[ XYtoKEY ( newcar.X(), newcar.Y() ) ].rt = 1; // make this spot to be occupied..
+			itr->second.rt = 1;
 			else						// goto west or south.. 
-			spot[ XYtoKEY ( newcar.X(), newcar.Y() ) ].lt = 1; // make this spot to be occupied..
+			itr->second.lt = 1;
 			
 			car.push_back(newcar);
-			
 			return 1;
 		}
 	}
@@ -71,13 +70,13 @@ int main()
 		if ( Car_Add_Congest(50, 0, NORTH, spot, car)) congest_count++;
 		if ( Car_Add_Congest(50, 100, SOUTH, spot, car)) congest_count++;
 	
-	int time_i = 0, time_max = 50;
+	int time_i = 0, time_max = 250;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		ofstream file("plot_cars.dat");// session 3..
 		
 		if ( time_i%10 == 0 ) Signal_Switch(cross);
-		//cout<<"At time "<<time_i<<" "<<endl;
+		cout<<"At time "<<time_i<<" "<<endl;
 
 		for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
 		{
@@ -88,22 +87,26 @@ int main()
 			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
 			caritr->Move(newx, newy, newdrct, spot);
-			file<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->drct<<" "<<caritr->del<<endl;
+			//file<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->drct<<" "<<caritr->del<<endl;
+			file<<caritr->X()<<" "<<caritr->Y()<<endl;
 		}
-		
-		for(caritr = car.begin(); caritr != car.end(); ++caritr)
-		{
-			if (caritr->del == 1)
-			{
-				if(caritr->DRCT()%2 == 0 ) spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].rt = 0;
-				else					   spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].lt = 0;
-
-			}
-		}
-		
-		car.remove_if( check_del() );
 	
+		if( time_i % 3 == 0 ) // !!!! decide how often to delete a car.. 
+		{
+			for(caritr = car.begin(); caritr != car.end(); ++caritr)
+			{
+				if (caritr->del == 1)
+				{
+					//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<" "<<caritr->drct<<endl;
+					if(caritr->DRCT()%2 == 0 ) spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].rt = 0;
+					else					   spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].lt = 0;
+				}
+			}
+		
+			car.remove_if( check_del() );
+		}
 		// session 3..
+		
 		file.close();
 		FILE *gp = popen("gnuplot -persist", "w");
    		if(gp == NULL)
@@ -112,23 +115,21 @@ int main()
 			exit(0);
 		}
 		fprintf(gp, "set terminal png\n");
-		fprintf(gp, "set output '%d.png'\n", time_i + 10);
+		fprintf(gp, "set output '%d.png'\n", time_i + 1000);
 		fprintf(gp, "set font ',30'\n");
-		fprintf(gp, "set title 'Time step %d'\n", time_i);
+		fprintf(gp, "set title 'Time step %d, Total cars num: %zu'\n", time_i, car.size() );
 		fprintf(gp, "set xrange[%d: %d]\n", bound.Wt(), bound.Et() );
 		fprintf(gp, "set yrange[%d: %d]\n", bound.St(), bound.Nt() );
 		fprintf(gp, "plot 'plot_cars.dat' u 1:2 title 'Cars' w points, 'plot_road.dat' u 1:2 title 'Road Spot' w points\n");
 		fclose(gp);
 		// session 3..
 	
-		
 		int congest_count = 0;
-		if ( Car_Add_Congest(0, 50, EAST, spot, car)) congest_count++;
+		if ( Car_Add_Congest(0, 50, EAST, spot, car)) 	congest_count++;
 		if ( Car_Add_Congest(100, 50, WEST, spot, car)) congest_count++;
-		if ( Car_Add_Congest(50, 0, NORTH, spot, car)) congest_count++;
+		if ( Car_Add_Congest(50, 0, NORTH, spot, car)) 	congest_count++;
 		if ( Car_Add_Congest(50, 100, SOUTH, spot, car)) congest_count++;
-		cout<<congest_count<<endl;
-		cout<<time_i<<endl;
+		cout<<endl<<congest_count<<" inserted into the map, totally "<<car.size()<<" cars"<<endl;
 
 		time_i++;
 	}

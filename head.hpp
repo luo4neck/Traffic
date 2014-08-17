@@ -31,7 +31,7 @@ int XYtoKEY(int x, int y)
 // translate x and y into spot key..
 // both x and y should not be larger than 99999, to ensure the unique of translated key value..
 {
-	if ( x<0 || y<0 || x>99999 || y>99999) 
+	if ( x>99999 || y>99999 ) 
 	{
 		printf("input is wrong!");
 		exit(-1);
