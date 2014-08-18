@@ -16,6 +16,10 @@ bool Car_Rand_Add(BOUND bound, map<int, LR> &spot, list<class CAR> &car)
 */
 int main()
 {
+	for(int i=0; i<16; ++i)
+	{
+		cout<<Sixteen[i][0]<<" "<<Sixteen[i][1]<<" "<<Sixteen[i][2]<<" "<<Sixteen[i][3]<<endl;
+	}
 	map<int, LR> spot;
 	map<int, LR>:: iterator spotitr;
 	map<int, CROSS> cross;
@@ -61,8 +65,6 @@ int main()
 				if( random < 0.5 ) 	drct = SOUTH;
 				else				drct = NORTH;
 			}
-		
-			cout<<x<<" "<<y<<endl;
 		
 			CAR newcar(x, y, drct);
 			spotitr = spot.find( XYtoKEY( x, y) );
