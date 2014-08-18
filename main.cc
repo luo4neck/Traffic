@@ -2,15 +2,12 @@
 
 using namespace std;
 
-const int car_num = 1500;
+const int car_num = 1600;
 const double p_randomization= 0.15;
 
 int main(int argc, char *argv[])
 {
-	for(int i=0; i<16; ++i)
-	{
-		cout<<Sixteen[i][0]<<" "<<Sixteen[i][1]<<" "<<Sixteen[i][2]<<" "<<Sixteen[i][3]<<endl;
-	}
+	//for(int i=0; i<16; ++i)		cout<<Four[i][0]<<" "<<Four[i][1]<<" "<<Four[i][2]<<" "<<Four[i][3]<<endl;
 	map<int, LR> spot;
 	map<int, LR>:: iterator spotitr;
 	map<int, CROSS> cross;
@@ -20,6 +17,7 @@ int main(int argc, char *argv[])
 	
 	boost::mpi::environment env(argc, argv);
 	boost::mpi::communicator world;
+	const int myid( world.rank() );
 
 	// session 4
 	int ewnum = 20;
@@ -33,9 +31,17 @@ int main(int argc, char *argv[])
 	
 	BOUND bound(2000, 0, 2000, 0, ewnum, nsnum, ewrange, nsrange);
 			  //e,    w, n,    s, 
-	bound.Construct(spot, cross); // construct the map in this process..
-	// session 4
+	int ewns[4];
+	for(int i=0; i<4; ++i)
+	{
+		ewns[i] = Four[myid][i];
+		// ewns[i] = Sixteen[myid][i];
+	}
+	printf("for proc %d: e=%d w=%d n=%d s=%d\n", myid, ewns[EAST], ewns[WEST], ewns[NORTH], ewns[SOUTH]);
 	
+	bound.Construct(spot, cross, ewns); // construct the map in this process..
+	// session 4
+
 	srand48(time(NULL));
 	for(int i=0; i < car_num; ++i) // constructing the cars in this process..
 	{
@@ -81,17 +87,17 @@ int main(int argc, char *argv[])
 	int time_i = 0, time_max = 5;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
-		ofstream file("plot_cars.dat");// session 3..
-		
 		if ( time_i%10 == 0 ) Signal_Switch(cross);
 		cout<<"At time "<<time_i<<" "<<endl;
 		
-	//	int here = 0;
+		//map exchange part..
+		
+
+
+		//map exchange part..
+
 		for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
 		{
-	//		cout<<"fine here"<<here<<endl;
-	//		here++;
-
 			char turn = caritr->path[0];
 			int newx(0), newy(0), newdrct(0);
 			bool rand = 1; // deal with the randomization..
@@ -99,49 +105,30 @@ int main(int argc, char *argv[])
 			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
 			caritr->Move(newx, newy, newdrct, spot);
-			file<<caritr->X()<<" "<<caritr->Y()<<endl;
 		}
 		
-		//if( time_i % 3 == 0 ) // !!!! decide how often to delete a car.. 
 		{
 			for(caritr = car.begin(); caritr != car.end(); ++caritr)
 			{
 				if (caritr->del == 1)
 				{
-					//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<" "<<caritr->drct<<endl;
 					if(caritr->DRCT()%2 == 0 ) spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].rt = 0;
 					else					   spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].lt = 0;
 				}
 			}
-		
 			car.remove_if( check_del() );
 		}
-		// session 4..
 		
-		file.close();
+		//car exchange part..
 		
-		FILE *gp = popen("gnuplot -persist", "w");
-   		if(gp == NULL)
-		{
-			printf("Cannot plot the data!\n");
-			exit(0);
-		}
-		fprintf(gp, "set terminal png\n");
-		fprintf(gp, "set output '%d.png'\n", time_i + 1000);
-		//fprintf(gp, "set font ',30'\n");
-		fprintf(gp, "set xlabel 'WEST <-                   -> EAST\n");
-		fprintf(gp, "set ylabel 'SOUTH <-                   -> NORTH\n");
-		fprintf(gp, "set title 'Time step %d, Total cars num: %zu'\n", time_i, car.size() );
-		fprintf(gp, "set xrange[%d: %d]\n", bound.Wt(), bound.Et() );
-		fprintf(gp, "set yrange[%d: %d]\n", bound.St(), bound.Nt() );
-		fprintf(gp, "plot 'plot_road.dat' u 1:2 title 'Road Spot' w points, 'plot_cars.dat' u 1:2 title 'Cars' w points\n");
-		fclose(gp);
-		// session 4..
-	
+		
+		
+		
+		//car exchange part..
+
 		time_i++;
 	}
 
-	system("convert -delay 25 -loop 0 *.png Moving.gif\n");	// session 3..
-	
+	//system("convert -delay 25 -loop 0 *.png Moving.gif\n");	// session 3..
 	return 0;
 }

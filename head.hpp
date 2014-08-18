@@ -233,12 +233,23 @@ class BOUND
 		delete[] NSpnt;
 	}
 
-	const int Et() { return et; }
-	const int Wt() { return wt; }
-	const int Nt() { return nt; }
-	const int St() { return st; }
+	const int Et()		  { return et; }
+	const int Etin()  { return et - 4; }
+	const int Etout() { return et + 5; }
+	
+	const int Wt()		  { return wt; }
+	const int Wtin()  { return wt + 4; }
+	const int Wtout() { return wt - 5; }
+	
+	const int Nt() 		  { return nt; }
+	const int Ntin()  { return nt - 4; }
+	const int Ntout() { return nt + 5; }
+	
+	const int St() 		  { return st; }
+	const int Stin()  { return st + 4; }
+	const int Stout() { return st - 5; }
 
-	void Construct(map<int, LR> &spot, map<int, CROSS> &cross)
+	void Construct(map<int, LR> &spot, map<int, CROSS> &cross, int ewns[4])
 	{
 		ofstream file("plot_road.dat"); //session 3..
 		// cross part..
@@ -262,10 +273,16 @@ class BOUND
 		map<int, LR>::iterator sitr;
 		
 		// ns part..
+		int ET, WT;
+		if (ewns[EAST] >= 0 ) ET = Etout();
+		else					 ET = Et();
+		if (ewns[WEST] >= 0 ) WT = Wtout();
+		else					 WT = Wt();
 		for( int i = 0; i<NSnum; ++i)
 		{
 			const int y = NSpnt[i];
-			for(int j = Wt(); j <= Et(); ++j)
+			//for(int j = Wt(); j <= Et(); ++j)
+			for(int j = WT; j <= ET; ++j)
 			{
 				int x = j;
 				citr = cross.find( XYtoKEY(x, y));
@@ -276,16 +293,20 @@ class BOUND
 					space.rt = 0;
 					spot.insert(pair<int, LR> ( XYtoKEY(x, y) , space));
 				}
-				
 				file<<x<<" "<<y<<endl;//session 3..;
 			}
 		}
 		
 		// ew part..
+		int NT, ST;
+		if (ewns[NORTH] >= 0) NT = Ntout();
+		else					 NT = Nt();
+		if (ewns[SOUTH] >= 0) ST = Stout();
+		else					 ST = St();
 		for(int i=0; i<EWnum; ++i)
 		{
 			const int x = EWpnt[i];
-			for(int j = St(); j <= Nt(); ++j )
+			for(int j = ST; j <= NT; ++j )
 			{
 				int y = j;
 				citr = cross.find( XYtoKEY (x, y));
@@ -296,7 +317,6 @@ class BOUND
 					space.rt = 0;
 					spot.insert(pair<int, LR> ( XYtoKEY(x, y) , space));
 				}
-				
 				file<<x<<" "<<y<<endl;//session 3..;
 			}
 		}

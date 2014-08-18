@@ -20,14 +20,14 @@
 #define NORTH_HARD 5000
 #define SOUTH_HARD 0
 
-int Four[4][4] ={ 
+const int Four[4][4] ={ 
 { 1, -1, -1, 2}, //0
 {-1, 0, -1, 3 },  //1
 { 2, -1, 0, -1},  //2
 {-1, 2, 1, -1 }   //3
 };
 
-int Sixteen[16][4] = {
+const int Sixteen[16][4] = {
 {1, -1, -1, 4},  //0
 {2, 0, -1, 5}, //1
 {3, 1, -1, 6}, //2 
