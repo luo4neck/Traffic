@@ -2,7 +2,7 @@
 
 using namespace std;
 
-const int car_num = 1500;
+const int car_num = 16000;
 const double p_randomization= 0.15;
 
 int main()
