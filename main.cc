@@ -4,17 +4,8 @@ using namespace std;
 
 const int car_num = 1500;
 const double p_randomization= 0.15;
-/*
-bool Car_Rand_Add(BOUND bound, map<int, LR> &spot, list<class CAR> &car)
-{
-	
 
-
-
-	return 0;
-}
-*/
-int main()
+int main(int argc, char *argv[])
 {
 	for(int i=0; i<16; ++i)
 	{
@@ -27,6 +18,9 @@ int main()
 	list<class CAR> car;
 	list<class CAR>:: iterator caritr;
 	
+	boost::mpi::environment env(argc, argv);
+	boost::mpi::communicator world;
+
 	// session 4
 	int ewnum = 20;
 	int nsnum = 20;

@@ -9,6 +9,21 @@ struct LR
 	bool rt;
 };
 
+namespace boost
+{
+	namespace serialization
+	{
+		template<class Archive>
+		void serialize(Archive &ar, struct LR &lr, const unsigned int version)
+		{
+			ar & lr.lt;
+			ar & lr.rt;
+		}
+	}
+}
+//BOOST_IS_MPI_DATATYPE (LR);  // what is the usage of this line??
+
+
 struct CROSS
 // used to construct the cross of  map..
 {
@@ -68,7 +83,8 @@ class CAR
 	bool del; // 0 is not to be deleted, 1 is to be deleted..
 	int drct;
 	string path;
-
+	
+	CAR() {} // default constructor..
 	CAR(int X, int Y, int DRCT)
 	{
 		del = 0;
@@ -79,6 +95,16 @@ class CAR
 	}
 
 	~CAR() {}
+
+	template<typename Archive>
+	void serialize(Archive& ar, const unsigned version)
+	{	// simply serialize the data members of CAR..
+		ar &x;
+		ar &y;
+		ar &del;
+		ar &drct;
+		ar &path;
+	}
 
 	const int X()
 	{ return x; }
