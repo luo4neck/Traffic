@@ -85,13 +85,13 @@ class CAR
 	string path;
 	
 	CAR() {} // default constructor..
-	CAR(int X, int Y, int DRCT)
+	CAR(int X, int Y, int DRCT, string PATH)
 	{
 		del = 0;
 		x = X;
 		y = Y;
 		drct = DRCT;
-		path = "ssss";
+		path = PATH;
 	}
 
 	~CAR() {}
@@ -128,7 +128,6 @@ class CAR
 			for( int i=0; i<5; ++i) // detect 5 spots maxism..
 			{
 				int tmpx = newx, tmpy = newy;
-
 				if 		( newdrct == EAST )  tmpx = newx + 1;
 				else if ( newdrct == WEST )  tmpx = newx - 1;
 				else if ( newdrct == NORTH)  tmpy = newy + 1;
@@ -251,7 +250,7 @@ class BOUND
 		map<int, LR>::iterator itr;
 		for(itr = ES.begin(); itr != ES.end(); ++itr)
 		{
-			cout<<"epackout"<<itr->first<<" "<<itr->second.rt<<" "<<itr->second.lt<<endl;
+			cout<<"epackout"<<itr->first<<" "<<itr->second.lt<<" "<<itr->second.rt<<endl;
 		}
 	}
 
@@ -396,7 +395,8 @@ bool Car_Add_Congest(const int x, const int y, const int drct, map<int, LR> &spo
  		else if (drct%2 == 1 && itr->second.lt == 1) return 0;// west or south..
  		else
  		{
- 			CAR newcar(x, y, drct);
+			string PATH = "sssss";
+ 			CAR newcar(x, y, drct, PATH);
 
  			if ( newcar.DRCT()%2 == 0)  // go to north or east..
  			itr->second.rt = 1;

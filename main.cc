@@ -75,21 +75,22 @@ int main(int argc, char *argv[])
 		ewns[i] = Four[myid][i];
 		// ewns[i] = Sixteen[myid][i];
 	}
-	printf("for proc %d: e=%d w=%d n=%d s=%d\n", myid, ewns[EAST], ewns[WEST], ewns[NORTH], ewns[SOUTH]);
+	//printf("for proc %d: e=%d w=%d n=%d s=%d\n", myid, ewns[EAST], ewns[WEST], ewns[NORTH], ewns[SOUTH]);
 	
 	bound.Construct(spot, cross, ewns); // construct the map in this process..
 	// session 4
 	
-/*	
 	if(myid == 0)
 	{
 		cout<<"This is test of p 0"<<endl;
-		for(spotitr = spot.begin(); spotitr != spot.end(); ++spotitr)
-		{
-			cout<<spotitr->first<<endl;
-		}
+		string PATH = "ssssss";
+		CAR newcar(48, 60, EAST, PATH);
+		car.push_back(newcar);
+		spotitr = spot.find( XYtoKEY( 48, 60 ));
+		if ( spotitr != spot.end() )	spotitr->second.rt = 1;
+		else 							cout<<"wrong!!"<<endl<<endl;
 	}
-*/
+
 /*
 	srand48(time(NULL));
 	for(int i=0; i < car_num; ++i) // constructing the cars in this process..
@@ -133,7 +134,8 @@ int main(int argc, char *argv[])
 */
 	cout<<"simulation start!"<<endl;
 
-	int time_i = 0, time_max = 1;
+	int time_i = 0, time_max = 2;
+	world.barrier();
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		if ( time_i%10 == 0 ) Signal_Switch(cross);
@@ -198,7 +200,8 @@ int main(int argc, char *argv[])
 			{ spot[itr->first].lt = itr->second.lt; spot[itr->first].rt = itr->second.rt; }
 		}
 		//map exchange part..
-
+		
+		list<class CAR> ESCAR, WSCAR, NSCAR, SSCAR; // list of cars sending to e w n s..
 		for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
 		{
 			char turn = caritr->path[0];
@@ -206,27 +209,84 @@ int main(int argc, char *argv[])
 			bool rand = 1; // deal with the randomization..
 			if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
 			
+			cout<<caritr->X()<<" "<<caritr->Y()<<endl;
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
+			cout<<caritr->X()<<" "<<caritr->Y()<<endl;
 			caritr->Move(newx, newy, newdrct, spot);
-		}
-		
-		{
-			for(caritr = car.begin(); caritr != car.end(); ++caritr)
+			cout<<caritr->X()<<" "<<caritr->Y()<<endl;
+			
+			if( caritr->X() > bound.Et() ) // if come out of range.. set del to 1, add to send list..
 			{
-				if (caritr->del == 1)
-				{
-					if(caritr->DRCT()%2 == 0 ) spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].rt = 0;
-					else					   spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].lt = 0;
-				}
+				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
+				ESCAR.push_back(newcar);
+				caritr->del = 1;
 			}
-			car.remove_if( check_del() );
+			if( caritr->X() < bound.Wt() ) // if come out of range.. set del to 1, add to send list..
+			{
+				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
+				WSCAR.push_back(newcar);
+				caritr->del = 1;
+			}
+			if( caritr->Y() > bound.Nt() ) // if come out of range.. set del to 1, add to send list..
+			{
+				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
+				NSCAR.push_back(newcar);
+				caritr->del = 1;
+			}
+			if( caritr->Y() < bound.St() ) // if come out of range.. set del to 1, add to send list..
+			{
+				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
+				SSCAR.push_back(newcar);
+				caritr->del = 1;
+			}
 		}
 		
+		if(myid == 0) cout<<ESCAR.size()<<" "<<WSCAR.size()<<" "<<NSCAR.size()<<" "<<SSCAR.size()<<endl;
+
+		//cout<<"hi there"<<endl;
+		for(caritr = car.begin(); caritr != car.end(); ++caritr)
+		{
+			cout<<"in proc "<<myid<<" : "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<endl<<endl;
+			if (caritr->del == 1)
+			{
+				if(caritr->DRCT()%2 == 0 ) spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].rt = 0;
+				else					   spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].lt = 0;
+			}
+		}
+		
+		car.remove_if( check_del() );
+		world.barrier();
+		sleep(1);
 		//car exchange part..
+
+		list<class CAR> ERCAR, WRCAR, NRCAR, SRCAR; // list of cars recved from e w n s..
+		if( ewns[EAST]  >= 0 )
+		{
+			req[0] = world.isend( ewns[EAST], myid+100, ESCAR); // process id+10 of sender is the tag..
+			req[1] = world.irecv( ewns[EAST], ewns[EAST]+100, ERCAR);
+		}
+		if( ewns[WEST]  >= 0 )
+		{
+			req[2] = world.isend( ewns[WEST], myid+100, WSCAR); // process id+10 of sender is the tag..
+			req[3] = world.irecv( ewns[WEST], ewns[WEST]+100, WRCAR);
+		}
+		if( ewns[NORTH] >= 0 )
+		{
+			req[4] = world.isend( ewns[NORTH], myid+100, NSCAR); // process id+10 of sender is the tag..
+			req[5] = world.irecv( ewns[NORTH], ewns[NORTH]+100, NRCAR);
+		}
+		if( ewns[SOUTH] >= 0 )
+		{
+			req[6] = world.isend( ewns[SOUTH], myid+100, SSCAR); // process id+10 of sender is the tag..
+			req[7] = world.irecv( ewns[SOUTH], ewns[SOUTH]+100, SRCAR);
+		}
 		
+		boost::mpi::wait_all(req, req+8);	//waitall
 		
-		
-		
+		if( ewns[EAST]  >= 0 ) car.splice(car.begin(), ERCAR);
+		if( ewns[WEST]  >= 0 ) car.splice(car.begin(), WRCAR);
+		if( ewns[NORTH] >= 0 ) car.splice(car.begin(), NRCAR);
+		if( ewns[SOUTH] >= 0 ) car.splice(car.begin(), NRCAR);
 		//car exchange part..
 
 		time_i++;
