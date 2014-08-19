@@ -33,8 +33,6 @@ int main(int argc, char *argv[])
 		nsrange[0] = 60;
 		nsrange[1] = 80;
 		Bet = 50, Bwt = 0, Bnt = 100, Bst = 51;
-	//	bound(50, 0, 100, 51, ewnum, nsnum, ewrange, nsrange);
-				 	  //e,    w, n,    s, 
 	}
 	if( myid == 1 )
 	{
@@ -46,7 +44,6 @@ int main(int argc, char *argv[])
 		nsrange[0] = 60;
 		nsrange[1] = 80;
 		Bet = 100, Bwt = 51, Bnt = 100, Bst = 51;
-	//	BOUND bound(100, 51, 100, 51, ewnum, nsnum, ewrange, nsrange);
 	}
 	if( myid == 2 )
 	{
@@ -58,7 +55,6 @@ int main(int argc, char *argv[])
 		nsrange[0] = 20;
 		nsrange[1] = 40;
 		Bet = 50, Bwt = 0, Bnt = 50, Bst = 0;
-	//	BOUND bound(50, 0, 50, 0, ewnum, nsnum, ewrange, nsrange);
 	}
 	if( myid == 3 )
 	{
@@ -70,7 +66,6 @@ int main(int argc, char *argv[])
 		nsrange[0] = 20;
 		nsrange[1] = 40;
 		Bet = 100, Bwt = 51, Bnt = 50, Bst = 0;
-	//	BOUND bound(100, 51, 50, 0, ewnum, nsnum, ewrange, nsrange);
 	}
 
 	BOUND bound(Bet, Bwt, Bnt, Bst, ewnum, nsnum, ewrange, nsrange);
@@ -145,13 +140,10 @@ int main(int argc, char *argv[])
 		cout<<"At time "<<time_i<<" "<<endl;
 		
 		//map exchange part.. 
-		boost::mpi::request req[8];// tmp..
+		boost::mpi::request req[8];
 		map<int, LR> RE, RW, RN, RS; // recv from east, west, north, south..
 		if( ewns[EAST] >= 0 )
 		{
-			if(myid == 0)
-			{spot[460080].rt = 1;
-			spot[460080].lt = 1;}
 			map<int, LR> ES; // east direction send..
 			bound.Epackout(ES, spot);
 			req[0] = world.isend( ewns[EAST], myid+100, ES); // process id+10 of sender is the tag..
@@ -159,37 +151,51 @@ int main(int argc, char *argv[])
 		} 
 		if( ewns[WEST] >= 0 )
 		{
-			map<int, LR> WS; // east direction send..
+			map<int, LR> WS; // west direction send..
 			bound.Wpackout(WS, spot);
 			req[2] = world.isend( ewns[WEST], myid+100, WS); // process id+10 of sender is the tag..
 			req[3] = world.irecv( ewns[WEST], ewns[WEST]+100, RW);
 		}
 		if( ewns[NORTH] >= 0 )
 		{
-			map<int, LR> NS; // east direction send..
+			map<int, LR> NS; // north direction send..
 			bound.Npackout(NS, spot);
 			req[4] = world.isend( ewns[NORTH], myid+100, NS); // process id+10 of sender is the tag..
 			req[5] = world.irecv( ewns[NORTH], ewns[NORTH]+100, RN);
 		}
 		if( ewns[SOUTH] >= 0 )
 		{
-			map<int, LR> SS; // east direction send..
+			map<int, LR> SS; // south direction send..
 			bound.Spackout(SS, spot);
 			req[6] = world.isend( ewns[SOUTH], myid+100, SS); // process id+10 of sender is the tag..
 			req[7] = world.irecv( ewns[SOUTH], ewns[SOUTH]+100, RS);
 		}
 		
-		//waitall
-		boost::mpi::wait_all(req, req+8);
-		if(myid == 1)
+		boost::mpi::wait_all(req, req+8);	//waitall
+		
+		if( ewns[EAST]  >= 0 ) // update spot by recieved data..
 		{
-			cout<<"hey!!"<<endl;
-			map<int, LR>:: iterator itr2;
-			for(itr2 = RW.begin(); itr2 != RW.end(); ++itr2)
-			{
-				cout<<"ha"<<endl;
-				cout<<itr2->first<<" "<<itr2->second.rt<<" "<<itr2->second.lt<<endl;
-			}
+			map<int, LR>:: iterator itr;
+			for(itr = RE.begin(); itr != RE.end(); ++itr)
+			{ spot[itr->first].lt = itr->second.lt; spot[itr->first].rt = itr->second.rt; }
+		}
+		if( ewns[WEST]  >= 0 ) // update spot by recieved data..
+		{
+			map<int, LR>:: iterator itr;
+			for(itr = RW.begin(); itr != RW.end(); ++itr)
+			{ spot[itr->first].lt = itr->second.lt; spot[itr->first].rt = itr->second.rt; }
+		}
+		if( ewns[NORTH] >= 0 ) // update spot by recieved data..
+		{
+			map<int, LR>:: iterator itr;
+			for(itr = RN.begin(); itr != RN.end(); ++itr)
+			{ spot[itr->first].lt = itr->second.lt; spot[itr->first].rt = itr->second.rt; }
+		}
+		if( ewns[SOUTH] >= 0 ) // update spot by recieved data..
+		{
+			map<int, LR>:: iterator itr;
+			for(itr = RS.begin(); itr != RS.end(); ++itr)
+			{ spot[itr->first].lt = itr->second.lt; spot[itr->first].rt = itr->second.rt; }
 		}
 		//map exchange part..
 
@@ -227,6 +233,6 @@ int main(int argc, char *argv[])
 		cout<<myid<<" succ at time "<<time_i<<endl;
 	}
 
-	//system("convert -delay 25 -loop 0 *.png Moving.gif\n");	// session 3..
+	//system("convert -delay 25 -loop 0 *.png Moving.gif\n");	// session 4..
 	return 0;
 }
