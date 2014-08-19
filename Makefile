@@ -11,5 +11,5 @@ test: all
 #	./main
 
 clean:
-#	rm *.o main
-	rm *.gif *.o *.png plot_cars.dat plot_road.dat main
+	rm *.o main
+#	rm *.gif *.o *.png plot_cars.dat plot_road.dat main

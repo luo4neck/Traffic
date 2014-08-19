@@ -21,8 +21,6 @@ namespace boost
 		}
 	}
 }
-//BOOST_IS_MPI_DATATYPE (LR);  // what is the usage of this line??
-
 
 struct CROSS
 // used to construct the cross of  map..
@@ -122,11 +120,9 @@ class CAR
 		newx = X(), newy = Y();
 		newdrct = DRCT();
 	
-		cout<<"hello"<<endl;
 		if(	path.size() == 0 ) del = 1;
 		else if(rand) // rand == 1 means no randomization.. else finish the function..
 		{
-			cout<<"hi there"<<endl;
 			for( int i=0; i<5; ++i) // detect 5 spots maxism..
 			{
 				int tmpx = newx, tmpy = newy;
@@ -248,11 +244,6 @@ class BOUND
 				ES[ XYtoKEY(x,y) ].rt = spot[ XYtoKEY(x,y) ].rt; 
 				ES[ XYtoKEY(x,y) ].lt = spot[ XYtoKEY(x,y) ].lt; 
 			}
-		}
-		map<int, LR>::iterator itr;
-		for(itr = ES.begin(); itr != ES.end(); ++itr)
-		{
-			cout<<"epackout"<<itr->first<<" "<<itr->second.lt<<" "<<itr->second.rt<<endl;
 		}
 	}
 
@@ -384,29 +375,3 @@ class BOUND
 };
 
 /*  upside is class BOUND, down side are test code */
-
-bool Car_Add_Congest(const int x, const int y, const int drct, map<int, LR> &spot, list<class CAR> &car)
-// this function is used to do car congestion test..
-{
- 	map<int, LR>:: iterator itr;
- 	itr = spot.find( XYtoKEY(x, y) );
- 	if ( itr == spot.end() ) return 0; // this is not a location..
-	else  // this location has a spot..
- 	{
-		if ( drct%2 == 0 && itr->second.rt == 1) 	 return 0;// east or north..
- 		else if (drct%2 == 1 && itr->second.lt == 1) return 0;// west or south..
- 		else
- 		{
-			string PATH = "sssss";
- 			CAR newcar(x, y, drct, PATH);
-
- 			if ( newcar.DRCT()%2 == 0)  // go to north or east..
- 			itr->second.rt = 1;
- 			else						// goto west or south.. 
- 			itr->second.lt = 1;
- 			
-			car.push_back(newcar);
- 			return 1;
-		}
- 	}
-}

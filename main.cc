@@ -7,7 +7,6 @@ const double p_randomization= 0.05;
 
 int main(int argc, char *argv[])
 {
-	//for(int i=0; i<16; ++i)		cout<<Four[i][0]<<" "<<Four[i][1]<<" "<<Four[i][2]<<" "<<Four[i][3]<<endl;
 	map<int, LR> spot;
 	map<int, LR>:: iterator spotitr;
 	map<int, CROSS> cross;
@@ -21,7 +20,6 @@ int main(int argc, char *argv[])
 	
 	int ewns[4]; // to recv 4 boundary info, one array two usage..
 	int ewnum, nsnum, *ewrange, *nsrange;
-	//BOUND bound;
 	int Bet, Bwt, Bnt, Bst;
 	if( myid == 0 )
 	{
@@ -75,15 +73,13 @@ int main(int argc, char *argv[])
 		ewns[i] = Four[myid][i];
 		// ewns[i] = Sixteen[myid][i];
 	}
-	//printf("for proc %d: e=%d w=%d n=%d s=%d\n", myid, ewns[EAST], ewns[WEST], ewns[NORTH], ewns[SOUTH]);
 	
 	bound.Construct(spot, cross, ewns); // construct the map in this process..
-	// session 4
 	
 	if(myid == 0)
 	{
 		cout<<"This is test of p 0"<<endl;
-		string PATH = "ssssss";
+		string PATH = "srssss";
 		CAR newcar(48, 60, EAST, PATH);
 		car.push_back(newcar);
 		spotitr = spot.find( XYtoKEY( 48, 60 ));
@@ -91,8 +87,8 @@ int main(int argc, char *argv[])
 		else 							cout<<"wrong!!"<<endl<<endl;
 	}
 
-/*
 	srand48(time(NULL));
+/*
 	for(int i=0; i < car_num; ++i) // constructing the cars in this process..
 	{
 		bool check = 1;
@@ -132,14 +128,15 @@ int main(int argc, char *argv[])
 		}
 	}
 */
-	cout<<"simulation start!"<<endl;
+	if(myid == 0) cout<<"simulation start!"<<endl;
 
-	int time_i = 0, time_max = 2;
-	world.barrier();
+	int time_i = 0, time_max = 24;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
+		world.barrier();
+		//sleep(1);
+		if (myid == 0)	cout<<"At time "<<time_i<<" "<<endl;
 		if ( time_i%10 == 0 ) Signal_Switch(cross);
-		cout<<"At time "<<time_i<<" "<<endl;
 		
 		//map exchange part.. 
 		boost::mpi::request req[8];
@@ -207,17 +204,14 @@ int main(int argc, char *argv[])
 			char turn = caritr->path[0];
 			int newx(0), newy(0), newdrct(0);
 			bool rand = 1; // deal with the randomization..
-			if ( drand48() < p_randomization ) rand = 1; // 0 is do randomization..
-			//if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
+			//if ( drand48() < p_randomization ) rand = 1; // 0 is do randomization..
+			if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
 			
 			cout<<"rand "<<rand<<endl;
-			cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl<<endl;
+			cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
+			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
-			
-			cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl<<endl;
-			
 			caritr->Move(newx, newy, newdrct, spot);
-			cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl<<endl;
 			
 			if( caritr->X() > bound.Et() ) // if come out of range.. set del to 1, add to send list..
 			{
@@ -243,14 +237,12 @@ int main(int argc, char *argv[])
 				SSCAR.push_back(newcar);
 				caritr->del = 1;
 			}
-			cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl<<endl;
+			cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 		}
-		
 
-		//cout<<"hi there"<<endl;
 		for(caritr = car.begin(); caritr != car.end(); ++caritr)
 		{
-			cout<<"in proc "<<myid<<" : "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<endl<<endl;
+			cout<<"time: "<<time_i<<" in proc "<<myid<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<endl<<endl;
 			if (caritr->del == 1)
 			{
 				if(caritr->DRCT()%2 == 0 ) spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].rt = 0;
@@ -260,9 +252,9 @@ int main(int argc, char *argv[])
 		
 		car.remove_if( check_del() );
 		world.barrier();
-		sleep(1);
+		//sleep(1);
+		
 		//car exchange part..
-
 		list<class CAR> ERCAR, WRCAR, NRCAR, SRCAR; // list of cars recved from e w n s..
 		if( ewns[EAST]  >= 0 )
 		{
@@ -286,16 +278,51 @@ int main(int argc, char *argv[])
 		}
 		
 		boost::mpi::wait_all(req, req+8);	//waitall
-		if(myid == 1) cout<<ERCAR.size()<<" "<<WRCAR.size()<<" "<<NRCAR.size()<<" "<<SRCAR.size()<<endl;
+		//if(myid == 1) cout<<ERCAR.size()<<" "<<WRCAR.size()<<" "<<NRCAR.size()<<" "<<SRCAR.size()<<endl;
 		
-		if( ewns[EAST]  >= 0 ) car.splice(car.begin(), ERCAR);
-		if( ewns[WEST]  >= 0 ) car.splice(car.begin(), WRCAR);
-		if( ewns[NORTH] >= 0 ) car.splice(car.begin(), NRCAR);
-		if( ewns[SOUTH] >= 0 ) car.splice(car.begin(), NRCAR);
+		if( ewns[SOUTH]  >= 0 ) // move recieved cars into car..
+		{	
+			list<class CAR>::iterator itr;
+			for(itr = ERCAR.begin(); itr != ERCAR.end(); ++itr)
+			{
+				if (itr->DRCT()%2 == 0)	spot[ XYtoKEY( itr->X(), itr->Y() ) ].rt = 1;
+				else					spot[ XYtoKEY( itr->X(), itr->Y() ) ].lt = 1;
+			}
+			car.splice(car.begin(), ERCAR);
+		}
+		if( ewns[WEST]  >= 0 )  // move recieved cars into car..
+		{
+			list<class CAR>::iterator itr;
+			for(itr = WRCAR.begin(); itr != WRCAR.end(); ++itr)
+			{
+				if (itr->DRCT()%2 == 0)	spot[ XYtoKEY( itr->X(), itr->Y() ) ].rt = 1;
+				else					spot[ XYtoKEY( itr->X(), itr->Y() ) ].lt = 1;
+			}
+			car.splice(car.begin(), WRCAR);
+		}
+		if( ewns[NORTH] >= 0 ) // move recieved cars into car..
+		{
+			list<class CAR>::iterator itr;
+			for(itr = NRCAR.begin(); itr != NRCAR.end(); ++itr)
+			{
+				if (itr->DRCT()%2 == 0)	spot[ XYtoKEY( itr->X(), itr->Y() ) ].rt = 1;
+				else					spot[ XYtoKEY( itr->X(), itr->Y() ) ].lt = 1;
+			}
+			car.splice(car.begin(), NRCAR);
+		}
+		if( ewns[SOUTH] >= 0 ) // move recieved cars into car..
+		{
+			list<class CAR>::iterator itr;
+			for(itr = SRCAR.begin(); itr != SRCAR.end(); ++itr)
+			{
+				if (itr->DRCT()%2 == 0)	spot[ XYtoKEY( itr->X(), itr->Y() ) ].rt = 1;
+				else					spot[ XYtoKEY( itr->X(), itr->Y() ) ].lt = 1;
+			}
+			car.splice(car.begin(), SRCAR);
+		}
 		//car exchange part..
 
 		time_i++;
-		cout<<myid<<" succ at time "<<time_i<<endl;
 	}
 
 	//system("convert -delay 25 -loop 0 *.png Moving.gif\n");	// session 4..
