@@ -207,13 +207,17 @@ int main(int argc, char *argv[])
 			char turn = caritr->path[0];
 			int newx(0), newy(0), newdrct(0);
 			bool rand = 1; // deal with the randomization..
-			if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
+			if ( drand48() < p_randomization ) rand = 1; // 0 is do randomization..
+			//if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
 			
-			cout<<caritr->X()<<" "<<caritr->Y()<<endl;
+			cout<<"rand "<<rand<<endl;
+			cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl<<endl;
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
-			cout<<caritr->X()<<" "<<caritr->Y()<<endl;
+			
+			cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl<<endl;
+			
 			caritr->Move(newx, newy, newdrct, spot);
-			cout<<caritr->X()<<" "<<caritr->Y()<<endl;
+			cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl<<endl;
 			
 			if( caritr->X() > bound.Et() ) // if come out of range.. set del to 1, add to send list..
 			{
@@ -239,9 +243,9 @@ int main(int argc, char *argv[])
 				SSCAR.push_back(newcar);
 				caritr->del = 1;
 			}
+			cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl<<endl;
 		}
 		
-		if(myid == 0) cout<<ESCAR.size()<<" "<<WSCAR.size()<<" "<<NSCAR.size()<<" "<<SSCAR.size()<<endl;
 
 		//cout<<"hi there"<<endl;
 		for(caritr = car.begin(); caritr != car.end(); ++caritr)
@@ -282,6 +286,7 @@ int main(int argc, char *argv[])
 		}
 		
 		boost::mpi::wait_all(req, req+8);	//waitall
+		if(myid == 1) cout<<ERCAR.size()<<" "<<WRCAR.size()<<" "<<NRCAR.size()<<" "<<SRCAR.size()<<endl;
 		
 		if( ewns[EAST]  >= 0 ) car.splice(car.begin(), ERCAR);
 		if( ewns[WEST]  >= 0 ) car.splice(car.begin(), WRCAR);

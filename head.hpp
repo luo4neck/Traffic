@@ -121,10 +121,12 @@ class CAR
 		map<int, LR>:: iterator spotitr;
 		newx = X(), newy = Y();
 		newdrct = DRCT();
-		
+	
+		cout<<"hello"<<endl;
 		if(	path.size() == 0 ) del = 1;
 		else if(rand) // rand == 1 means no randomization.. else finish the function..
 		{
+			cout<<"hi there"<<endl;
 			for( int i=0; i<5; ++i) // detect 5 spots maxism..
 			{
 				int tmpx = newx, tmpy = newy;
