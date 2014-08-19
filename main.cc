@@ -2,8 +2,8 @@
 
 using namespace std;
 
-const int car_num = 1600;
-const double p_randomization= 0.15;
+const int car_num = 16;
+const double p_randomization= 0.05;
 
 int main(int argc, char *argv[])
 {
@@ -18,20 +18,63 @@ int main(int argc, char *argv[])
 	boost::mpi::environment env(argc, argv);
 	boost::mpi::communicator world;
 	const int myid( world.rank() );
+	
+	int ewns[4]; // to recv 4 boundary info, one array two usage..
+	int ewnum, nsnum, *ewrange, *nsrange;
+	//BOUND bound;
+	int Bet, Bwt, Bnt, Bst;
+	if( myid == 0 )
+	{
+		ewnum = 2, nsnum = 2;
+		ewrange = new int[2];
+		nsrange = new int[2];
+		ewrange[0] = 20;
+		ewrange[1] = 40;
+		nsrange[0] = 60;
+		nsrange[1] = 80;
+		Bet = 50, Bwt = 0, Bnt = 100, Bst = 51;
+	//	bound(50, 0, 100, 51, ewnum, nsnum, ewrange, nsrange);
+				 	  //e,    w, n,    s, 
+	}
+	if( myid == 1 )
+	{
+		ewnum = 2, nsnum = 2;
+		ewrange = new int[2];
+		nsrange = new int[2];
+		ewrange[0] = 60;
+		ewrange[1] = 80;
+		nsrange[0] = 60;
+		nsrange[1] = 80;
+		Bet = 100, Bwt = 51, Bnt = 100, Bst = 51;
+	//	BOUND bound(100, 51, 100, 51, ewnum, nsnum, ewrange, nsrange);
+	}
+	if( myid == 2 )
+	{
+		ewnum = 2, nsnum = 2;
+		ewrange = new int[2];
+		nsrange = new int[2];
+		ewrange[0] = 20;
+		ewrange[1] = 40;
+		nsrange[0] = 20;
+		nsrange[1] = 40;
+		Bet = 50, Bwt = 0, Bnt = 50, Bst = 0;
+	//	BOUND bound(50, 0, 50, 0, ewnum, nsnum, ewrange, nsrange);
+	}
+	if( myid == 3 )
+	{
+		ewnum = 2, nsnum = 2;
+		ewrange = new int[2];
+		nsrange = new int[2];
+		ewrange[0] = 60;
+		ewrange[1] = 80;
+		nsrange[0] = 20;
+		nsrange[1] = 40;
+		Bet = 100, Bwt = 51, Bnt = 50, Bst = 0;
+	//	BOUND bound(100, 51, 50, 0, ewnum, nsnum, ewrange, nsrange);
+	}
 
-	// session 4
-	int ewnum = 20;
-	int nsnum = 20;
-	int *ewrange = new int[ewnum]; 
-	int *nsrange = new int[nsnum];
-	
-	for(int i=0; i<ewnum; ++i) {	ewrange[i] = 100 * i + 50;	}
-	
-	for(int i=0; i<nsnum; ++i) {	nsrange[i] = 100 * i + 50;	}
-	
-	BOUND bound(2000, 0, 2000, 0, ewnum, nsnum, ewrange, nsrange);
-			  //e,    w, n,    s, 
-	int ewns[4];
+	BOUND bound(Bet, Bwt, Bnt, Bst, ewnum, nsnum, ewrange, nsrange);
+
 	for(int i=0; i<4; ++i)
 	{
 		ewns[i] = Four[myid][i];
@@ -41,7 +84,18 @@ int main(int argc, char *argv[])
 	
 	bound.Construct(spot, cross, ewns); // construct the map in this process..
 	// session 4
-
+	
+/*	
+	if(myid == 0)
+	{
+		cout<<"This is test of p 0"<<endl;
+		for(spotitr = spot.begin(); spotitr != spot.end(); ++spotitr)
+		{
+			cout<<spotitr->first<<endl;
+		}
+	}
+*/
+/*
 	srand48(time(NULL));
 	for(int i=0; i < car_num; ++i) // constructing the cars in this process..
 	{
@@ -81,19 +135,62 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-
+*/
 	cout<<"simulation start!"<<endl;
 
-	int time_i = 0, time_max = 5;
+	int time_i = 0, time_max = 1;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		if ( time_i%10 == 0 ) Signal_Switch(cross);
 		cout<<"At time "<<time_i<<" "<<endl;
 		
-		//map exchange part..
+		//map exchange part.. 
+		boost::mpi::request req[8];// tmp..
+		map<int, LR> RE, RW, RN, RS; // recv from east, west, north, south..
+		if( ewns[EAST] >= 0 )
+		{
+			if(myid == 0)
+			{spot[460080].rt = 1;
+			spot[460080].lt = 1;}
+			map<int, LR> ES; // east direction send..
+			bound.Epackout(ES, spot);
+			req[0] = world.isend( ewns[EAST], myid+100, ES); // process id+10 of sender is the tag..
+			req[1] = world.irecv( ewns[EAST], ewns[EAST]+100, RE);
+		} 
+		if( ewns[WEST] >= 0 )
+		{
+			map<int, LR> WS; // east direction send..
+			bound.Wpackout(WS, spot);
+			req[2] = world.isend( ewns[WEST], myid+100, WS); // process id+10 of sender is the tag..
+			req[3] = world.irecv( ewns[WEST], ewns[WEST]+100, RW);
+		}
+		if( ewns[NORTH] >= 0 )
+		{
+			map<int, LR> NS; // east direction send..
+			bound.Npackout(NS, spot);
+			req[4] = world.isend( ewns[NORTH], myid+100, NS); // process id+10 of sender is the tag..
+			req[5] = world.irecv( ewns[NORTH], ewns[NORTH]+100, RN);
+		}
+		if( ewns[SOUTH] >= 0 )
+		{
+			map<int, LR> SS; // east direction send..
+			bound.Spackout(SS, spot);
+			req[6] = world.isend( ewns[SOUTH], myid+100, SS); // process id+10 of sender is the tag..
+			req[7] = world.irecv( ewns[SOUTH], ewns[SOUTH]+100, RS);
+		}
 		
-
-
+		//waitall
+		boost::mpi::wait_all(req, req+8);
+		if(myid == 1)
+		{
+			cout<<"hey!!"<<endl;
+			map<int, LR>:: iterator itr2;
+			for(itr2 = RW.begin(); itr2 != RW.end(); ++itr2)
+			{
+				cout<<"ha"<<endl;
+				cout<<itr2->first<<" "<<itr2->second.rt<<" "<<itr2->second.lt<<endl;
+			}
+		}
 		//map exchange part..
 
 		for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
@@ -127,6 +224,7 @@ int main(int argc, char *argv[])
 		//car exchange part..
 
 		time_i++;
+		cout<<myid<<" succ at time "<<time_i<<endl;
 	}
 
 	//system("convert -delay 25 -loop 0 *.png Moving.gif\n");	// session 3..

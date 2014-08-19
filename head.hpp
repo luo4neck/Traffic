@@ -236,22 +236,79 @@ class BOUND
 	const int Et()		  { return et; }
 	const int Etin()  { return et - 4; }
 	const int Etout() { return et + 5; }
-	
+	void Epackout(map<int, LR> &ES, map<int, LR> spot)
+	{
+		for(int i=0; i<NSnum; ++i)
+		{
+			const int y = NSpnt[i];
+			for(int j = Etin(); j<= Et(); ++j)
+			{
+				int x = j;
+				ES[ XYtoKEY(x,y) ].rt = spot[ XYtoKEY(x,y) ].rt; 
+				ES[ XYtoKEY(x,y) ].lt = spot[ XYtoKEY(x,y) ].lt; 
+			}
+		}
+		map<int, LR>::iterator itr;
+		for(itr = ES.begin(); itr != ES.end(); ++itr)
+		{
+			cout<<"epackout"<<itr->first<<" "<<itr->second.rt<<" "<<itr->second.lt<<endl;
+		}
+	}
+
 	const int Wt()		  { return wt; }
 	const int Wtin()  { return wt + 4; }
 	const int Wtout() { return wt - 5; }
+	void Wpackout(map<int, LR> &WS, map<int, LR> spot)
+	{
+		for(int i=0; i<NSnum; ++i)
+		{
+			const int y = NSpnt[i];
+			for(int j = Wtin(); j<= Wt(); --j)
+			{
+				int x = j;
+				WS[ XYtoKEY(x,y) ].rt = spot[ XYtoKEY(x,y) ].rt; 
+				WS[ XYtoKEY(x,y) ].lt = spot[ XYtoKEY(x,y) ].lt; 
+			}
+		}
+	}
 	
 	const int Nt() 		  { return nt; }
 	const int Ntin()  { return nt - 4; }
 	const int Ntout() { return nt + 5; }
+	void Npackout(map<int, LR> &NS, map<int, LR> spot)
+	{
+		for(int i=0; i<EWnum; ++i)
+		{
+			const int y = EWpnt[i];
+			for(int j = Ntin(); j<= Nt(); ++j)
+			{
+				int x = j;
+				NS[ XYtoKEY(x,y) ].rt = spot[ XYtoKEY(x,y) ].rt; 
+				NS[ XYtoKEY(x,y) ].lt = spot[ XYtoKEY(x,y) ].lt; 
+			}
+		}
+	}
 	
 	const int St() 		  { return st; }
 	const int Stin()  { return st + 4; }
 	const int Stout() { return st - 5; }
+	void Spackout(map<int, LR> &SS, map<int, LR> spot)
+	{
+		for(int i=0; i<NSnum; ++i)
+		{
+			const int y = NSpnt[i];
+			for(int j = Stin(); j<= St(); --j)
+			{
+				int x = j;
+				SS[ XYtoKEY(x,y) ].rt = spot[ XYtoKEY(x,y) ].rt; 
+				SS[ XYtoKEY(x,y) ].lt = spot[ XYtoKEY(x,y) ].lt; 
+			}
+		}
+	}
 
 	void Construct(map<int, LR> &spot, map<int, CROSS> &cross, int ewns[4])
 	{
-		ofstream file("plot_road.dat"); //session 3..
+//		ofstream file("plot_road.dat"); //session 3..
 		// cross part..
 		for(int i=0; i<EWnum; ++i)
 		{
@@ -260,7 +317,7 @@ class BOUND
 				int x = EWpnt[i];
 				int y = NSpnt[j];
 				
-				file<<x<<" "<<y<<endl;//session 3..;
+	//			cout<<x<<" "<<y<<endl;//session 3..;
 
 				CROSS crs;
 				crs.NSred = 1;
@@ -293,7 +350,7 @@ class BOUND
 					space.rt = 0;
 					spot.insert(pair<int, LR> ( XYtoKEY(x, y) , space));
 				}
-				file<<x<<" "<<y<<endl;//session 3..;
+	//			cout<<x<<" "<<y<<endl;//session 3..;
 			}
 		}
 		
@@ -317,10 +374,10 @@ class BOUND
 					space.rt = 0;
 					spot.insert(pair<int, LR> ( XYtoKEY(x, y) , space));
 				}
-				file<<x<<" "<<y<<endl;//session 3..;
+	//			cout<<x<<" "<<y<<endl;//session 3..;
 			}
 		}
-		file.close();
+		//file.close();
 	}
 
 };

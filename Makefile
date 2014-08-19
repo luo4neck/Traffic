@@ -7,7 +7,7 @@ main.o: main.cc head.hpp def.hpp
 	mpic++ -c main.cc -Wall -o main.o -lboost_mpi
 
 test: all 
-	mpirun -n 1 ./main
+	mpirun -n 4 ./main
 #	./main
 
 clean:
