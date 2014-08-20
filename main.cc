@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 	if(myid == 0)
 	{
 		cout<<"This is test of p 0"<<endl;
-		string PATH = "srssss";
+		string PATH = "srrssllssss";
 		CAR newcar(48, 60, EAST, PATH);
 		car.push_back(newcar);
 		spotitr = spot.find( XYtoKEY( 48, 60 ));
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 */
 	if(myid == 0) cout<<"simulation start!"<<endl;
 
-	int time_i = 0, time_max = 24;
+	int time_i = 0, time_max = 64;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		world.barrier();
@@ -242,7 +242,7 @@ int main(int argc, char *argv[])
 
 		for(caritr = car.begin(); caritr != car.end(); ++caritr)
 		{
-			cout<<"time: "<<time_i<<" in proc "<<myid<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<endl<<endl;
+			cout<<"time: "<<time_i<<" in proc "<<myid<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<" "<<caritr->path<<endl<<endl;
 			if (caritr->del == 1)
 			{
 				if(caritr->DRCT()%2 == 0 ) spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].rt = 0;
@@ -278,9 +278,9 @@ int main(int argc, char *argv[])
 		}
 		
 		boost::mpi::wait_all(req, req+8);	//waitall
-		//if(myid == 1) cout<<ERCAR.size()<<" "<<WRCAR.size()<<" "<<NRCAR.size()<<" "<<SRCAR.size()<<endl;
+		if(myid == 2) cout<<"time: "<<time_i<<" "<<ERCAR.size()<<" "<<WRCAR.size()<<" "<<NRCAR.size()<<" "<<SRCAR.size()<<endl;
 		
-		if( ewns[SOUTH]  >= 0 ) // move recieved cars into car..
+		if( ewns[EAST]  >= 0 ) // move recieved cars into car..
 		{	
 			list<class CAR>::iterator itr;
 			for(itr = ERCAR.begin(); itr != ERCAR.end(); ++itr)
