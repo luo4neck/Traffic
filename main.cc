@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 
 	for(int i=0; i<4; ++i)
 	{
-		ewns[i] = Four[myid][i];
+		ewns[i] = comap4[myid][i];
 		// ewns[i] = Sixteen[myid][i];
 	}
 	
