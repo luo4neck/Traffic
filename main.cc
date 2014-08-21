@@ -82,6 +82,10 @@ int main(int argc, char *argv[])
 		string PATH = "srrssllssss";
 		CAR newcar(48, 60, EAST, PATH);
 		car.push_back(newcar);
+		
+		CAR newcar1(46, 60, EAST, PATH);
+		car.push_back(newcar1);
+		
 		spotitr = spot.find( XYtoKEY( 48, 60 ));
 		if ( spotitr != spot.end() )	spotitr->second.rt = 1;
 		else 							cout<<"wrong!!"<<endl<<endl;

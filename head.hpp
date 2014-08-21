@@ -10,15 +10,13 @@ struct LR
 };
 
 namespace boost
+// serialization of struct LR..
 {
 	namespace serialization
 	{
 		template<class Archive>
 		void serialize(Archive &ar, struct LR &lr, const unsigned int version)
-		{
-			ar & lr.lt;
-			ar & lr.rt;
-		}
+		{	ar & lr.lt;	ar & lr.rt;	}
 	}
 }
 
