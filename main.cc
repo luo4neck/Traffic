@@ -1,5 +1,4 @@
 #include "head.hpp"
-#include<algorithm>
 using namespace std;
 
 const double p_randomization= 0.05; // probability of randomization..
@@ -56,8 +55,16 @@ void Input_Check(const int nps, int argc, char *argv[], int &car_num, int &N_max
 							mapin>>num;
 							NSRANGE.push_back(num);
 						}
-
 						mapin.close();
+				
+						sort(EWRANGE.begin(), EWRANGE.end() );
+						sort(NSRANGE.begin(), NSRANGE.end() );
+						
+						if ( EWRANGE.front() < 1 || NSRANGE.front() < 1 || EWRANGE.back() > N_max || NSRANGE.back() > E_max )
+						{
+							cout<<"Map is wrong!"<<endl;
+							Wrong();
+						}
 					}
 					break;
 			default: 
@@ -93,8 +100,6 @@ int main(int argc, char *argv[])
 	if( myid == 0 )
 	{
 		Input_Check(nps, argc, argv, car_num, North_Max, East_Max, EWRANGE, NSRANGE);
-		sort(EWRANGE.begin(), EWRANGE.end() );
-		sort(NSRANGE.begin(), NSRANGE.end() );
 
 		cout<<North_Max<<" "<<East_Max<<endl;
 		/*
