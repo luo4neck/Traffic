@@ -1,9 +1,66 @@
 #include "head.hpp"
-
 using namespace std;
 
-const int car_num = 16;
 const double p_randomization= 0.05;
+
+void Wrong()
+{
+	cout<<"Input is wrong! Please input as:"<<endl;
+	cout<<" $ mpirun -n 4 ./ main -v 100 -f map.dat"<<endl;
+	cout<<"Flag v means the number of vehicles in the map,"<<endl;
+	cout<<"Flag f means the map file."<<endl;
+	exit(0);
+}
+
+void Input_Check(const int nps, int argc, char *argv[], int &car_num)
+{
+	cout<<0<<" "<<argv[0]<<endl;
+	cout<<1<<" "<<argv[1]<<endl;
+	cout<<2<<" "<<argv[2]<<endl;
+	cout<<3<<" "<<argv[3]<<endl;
+	cout<<4<<" "<<argv[4]<<endl;
+	if (argc != 5) cout<<"argc = "<<argc<<endl; 
+
+	int ch;
+	opterr = 0;
+	while(( ch = getopt(argc, argv, "v:f:")) != -1 )
+	{
+		switch(ch)
+		{
+			case 'v':
+					{
+						int len = strlen(optarg);	
+						for(int i=0; i<len; ++i)
+						{
+							if( optarg[i] > '9' || optarg[i] < '0' ) Wrong();
+						}
+					
+						car_num = atoi(optarg);
+						
+						if( car_num < 1 ) Wrong();
+						else if (car_num < nps)	
+						{
+							cout<<"Number of vehicles is too small."<<endl;
+							Wrong();
+						}
+						cout<<"car_num: "<<car_num/nps<<endl; // car_num here is the number of cars in each process..
+					}
+					break;
+			case 'f': 
+					{
+						cout<<"optarg: "<<optarg<<endl; 
+					}
+					break;
+			default: 
+					{
+						cout<<"wrong haha"<<endl;
+						Wrong(); 
+					}
+					break;
+		}
+	}
+	Wrong();
+}
 
 int main(int argc, char *argv[])
 {
@@ -17,7 +74,14 @@ int main(int argc, char *argv[])
 	boost::mpi::environment env(argc, argv);
 	boost::mpi::communicator world;
 	const int myid( world.rank() );
-	
+	const int nps( world.size() );
+	int car_num;
+
+	if( myid == 0 )
+	{
+		Input_Check(nps, argc, argv, car_num);
+	}
+
 	int ewns[4]; // to recv 4 boundary info, one array two usage..
 	int ewnum, nsnum, *ewrange, *nsrange;
 	int Bet, Bwt, Bnt, Bst;

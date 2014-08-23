@@ -15,9 +15,9 @@
 #define NORTH 2
 #define SOUTH 3
 
-#define EAST_HARD  5000
+#define EAST_HARD  3000
 #define WEST_HARD  0
-#define NORTH_HARD 5000
+#define NORTH_HARD 3000
 #define SOUTH_HARD 0
 
 const int comap4[4][4] ={   // map of 2x2..
