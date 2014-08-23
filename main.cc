@@ -1,8 +1,6 @@
 #include "head.hpp"
-
 using namespace std;
 
-const int car_num = 16;
 const double p_randomization= 0.05;
 
 int main(int argc, char *argv[])
@@ -17,7 +15,9 @@ int main(int argc, char *argv[])
 	boost::mpi::environment env(argc, argv);
 	boost::mpi::communicator world;
 	const int myid( world.rank() );
-	
+	//const int nps( world.size() );
+	//int car_num;
+
 	int ewns[4]; // to recv 4 boundary info, one array two usage..
 	int ewnum, nsnum, *ewrange, *nsrange;
 	int Bet, Bwt, Bnt, Bst;
