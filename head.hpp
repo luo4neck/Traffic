@@ -2,6 +2,16 @@
 
 using namespace std;
 
+void Wrong()
+{
+	cout<<"Input is wrong! Please input as:"<<endl;
+	cout<<" $ mpirun -n 4 ./ main -v 100 -f map.dat"<<endl;
+	cout<<"Flag v means the number of vehicles in the map,"<<endl;
+	cout<<"Flag f means the map file."<<endl;
+	exit(0);
+}
+
+
 struct LR
 // used to construct the spot of map..
 {

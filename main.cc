@@ -1,40 +1,24 @@
 #include "head.hpp"
+#include<algorithm>
 using namespace std;
 
-const double p_randomization= 0.05;
+const double p_randomization= 0.05; // probability of randomization..
 
-void Wrong()
-{
-	cout<<"Input is wrong! Please input as:"<<endl;
-	cout<<" $ mpirun -n 4 ./ main -v 100 -f map.dat"<<endl;
-	cout<<"Flag v means the number of vehicles in the map,"<<endl;
-	cout<<"Flag f means the map file."<<endl;
-	exit(0);
-}
-
-void Input_Check(const int nps, int argc, char *argv[], int &car_num)
-{
-	cout<<0<<" "<<argv[0]<<endl;
-	cout<<1<<" "<<argv[1]<<endl;
-	cout<<2<<" "<<argv[2]<<endl;
-	cout<<3<<" "<<argv[3]<<endl;
-	cout<<4<<" "<<argv[4]<<endl;
-	if (argc != 5) cout<<"argc = "<<argc<<endl; 
-
+void Input_Check(const int nps, int argc, char *argv[], int &car_num, int &N_max, int &E_max, vector<int> &EWRANGE, vector<int> &NSRANGE)
+{	
 	int ch;
 	opterr = 0;
 	while(( ch = getopt(argc, argv, "v:f:")) != -1 )
 	{
 		switch(ch)
 		{
-			case 'v':
+			case 'v':  // v flag will be followed by the number of vehicles in the program..
 					{
 						int len = strlen(optarg);	
 						for(int i=0; i<len; ++i)
 						{
 							if( optarg[i] > '9' || optarg[i] < '0' ) Wrong();
 						}
-					
 						car_num = atoi(optarg);
 						
 						if( car_num < 1 ) Wrong();
@@ -43,12 +27,37 @@ void Input_Check(const int nps, int argc, char *argv[], int &car_num)
 							cout<<"Number of vehicles is too small."<<endl;
 							Wrong();
 						}
-						cout<<"car_num: "<<car_num/nps<<endl; // car_num here is the number of cars in each process..
+						//cout<<"car_num: "<<car_num/nps<<endl; // car_num here is the number of cars in each process..
 					}
 					break;
-			case 'f': 
+			case 'f': // f flag will be followed by the read in map file in the program.. 
 					{
-						cout<<"optarg: "<<optarg<<endl; 
+						//cout<<"optarg: "<<optarg<<endl; 
+						ifstream mapin( optarg );
+						if ( !mapin.is_open() )  // check if the map file is successfully opened..
+						{
+							cout<<"Cant open: "<<optarg<<endl;
+							Wrong();
+						}
+						
+						int EWNUM, NSNUM;  // number of ports..
+						mapin>>E_max, mapin>>N_max; // first line of map file..
+						mapin>>EWNUM, mapin>>NSNUM;
+						
+						for(int i=0; i<EWNUM; ++i)
+						{
+							int num;
+							mapin>>num;
+							EWRANGE.push_back(num);
+						}
+						for(int i=0; i<NSNUM; ++i)
+						{
+							int num;
+							mapin>>num;
+							NSRANGE.push_back(num);
+						}
+
+						mapin.close();
 					}
 					break;
 			default: 
@@ -59,7 +68,7 @@ void Input_Check(const int nps, int argc, char *argv[], int &car_num)
 					break;
 		}
 	}
-	Wrong();
+	//cout<<"fine here!"<<endl;
 }
 
 int main(int argc, char *argv[])
@@ -76,10 +85,24 @@ int main(int argc, char *argv[])
 	const int myid( world.rank() );
 	const int nps( world.size() );
 	int car_num;
-
+	
+	int North_Max, East_Max;
+	//int *EWRANGE = new int[1];
+	//int *NSRANGE = new int[1];
+	vector<int> EWRANGE, NSRANGE;
 	if( myid == 0 )
 	{
-		Input_Check(nps, argc, argv, car_num);
+		Input_Check(nps, argc, argv, car_num, North_Max, East_Max, EWRANGE, NSRANGE);
+		sort(EWRANGE.begin(), EWRANGE.end() );
+		sort(NSRANGE.begin(), NSRANGE.end() );
+
+		cout<<North_Max<<" "<<East_Max<<endl;
+		/*
+		for(unsigned int i=0; i<EWRANGE.size(); ++i)	cout<<EWRANGE.at(i)<<", ";
+		cout<<endl;	
+		for(unsigned int i=0; i<NSRANGE.size(); ++i)	cout<<NSRANGE.at(i)<<", ";
+		cout<<endl;	
+		*/
 	}
 
 	int ewns[4]; // to recv 4 boundary info, one array two usage..
@@ -198,7 +221,7 @@ int main(int argc, char *argv[])
 */
 	if(myid == 0) cout<<"simulation start!"<<endl;
 
-	int time_i = 0, time_max = 64;
+	int time_i = 0, time_max = 1;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		world.barrier();
