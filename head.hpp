@@ -11,6 +11,80 @@ void Wrong()
 	exit(0);
 }
 
+void Input_Check(const int nps, int argc, char *argv[], int &car_num, int &N_max, int &E_max, vector<int> &EWRANGE, vector<int> &NSRANGE)
+// this function will be used to check all input variables..
+{	
+	int ch;
+	opterr = 0;
+	while(( ch = getopt(argc, argv, "v:f:")) != -1 )
+	{
+		switch(ch)
+		{
+			case 'v':  // v flag will be followed by the number of vehicles in the program..
+					{
+						int len = strlen(optarg);	
+						for(int i=0; i<len; ++i)
+						{
+							if( optarg[i] > '9' || optarg[i] < '0' ) Wrong();
+						}
+						car_num = atoi(optarg);
+						
+						if( car_num < 1 ) Wrong();
+						else if (car_num < nps)	
+						{
+							cout<<"Number of vehicles is too small."<<endl;
+							Wrong();
+						}
+					}
+					break;
+			case 'f': // f flag will be followed by the read in map file in the program.. 
+					{
+						ifstream mapin( optarg );
+						if ( !mapin.is_open() )  // check if the map file is successfully opened..
+						{
+							cout<<"Cant open: "<<optarg<<endl;
+							Wrong();
+						}
+						
+						int EWNUM, NSNUM;  // number of ports..
+						mapin>>E_max, mapin>>N_max; // first line of map file..
+						mapin>>EWNUM, mapin>>NSNUM;
+						
+						for(int i=0; i<EWNUM; ++i)
+						{
+							int num;
+							mapin>>num;
+							EWRANGE.push_back(num);
+						}
+						for(int i=0; i<NSNUM; ++i)
+						{
+							int num;
+							mapin>>num;
+							NSRANGE.push_back(num);
+						}
+						mapin.close();
+				
+						sort(EWRANGE.begin(), EWRANGE.end() );
+						sort(NSRANGE.begin(), NSRANGE.end() );
+						
+						if ( EWRANGE.front() < 1 || NSRANGE.front() < 1 || EWRANGE.back() > E_max || NSRANGE.back() > N_max || E_max > EAST_HARD || N_max > NORTH_HARD )
+						// check if any element in the map exceed the maximum range..
+						{
+							cout<<"Map is wrong!"<<endl;
+							Wrong();
+						}
+					}
+					break;
+			default: 
+					{
+						cout<<"wrong haha"<<endl;
+						Wrong(); 
+					}
+					break;
+		}
+	}
+}
+
 
 struct LR
 // used to construct the spot of map..
@@ -317,8 +391,6 @@ class BOUND
 				int x = EWpnt[i];
 				int y = NSpnt[j];
 				
-	//			cout<<x<<" "<<y<<endl;//session 3..;
-
 				CROSS crs;
 				crs.NSred = 1;
 				crs.EWred = 0;
@@ -338,7 +410,6 @@ class BOUND
 		for( int i = 0; i<NSnum; ++i)
 		{
 			const int y = NSpnt[i];
-			//for(int j = Wt(); j <= Et(); ++j)
 			for(int j = WT; j <= ET; ++j)
 			{
 				int x = j;

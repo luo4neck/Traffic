@@ -3,81 +3,6 @@ using namespace std;
 
 const double p_randomization= 0.05; // probability of randomization..
 
-void Input_Check(const int nps, int argc, char *argv[], int &car_num, int &N_max, int &E_max, vector<int> &EWRANGE, vector<int> &NSRANGE)
-{	
-	int ch;
-	opterr = 0;
-	while(( ch = getopt(argc, argv, "v:f:")) != -1 )
-	{
-		switch(ch)
-		{
-			case 'v':  // v flag will be followed by the number of vehicles in the program..
-					{
-						int len = strlen(optarg);	
-						for(int i=0; i<len; ++i)
-						{
-							if( optarg[i] > '9' || optarg[i] < '0' ) Wrong();
-						}
-						car_num = atoi(optarg);
-						
-						if( car_num < 1 ) Wrong();
-						else if (car_num < nps)	
-						{
-							cout<<"Number of vehicles is too small."<<endl;
-							Wrong();
-						}
-						//cout<<"car_num: "<<car_num/nps<<endl; // car_num here is the number of cars in each process..
-					}
-					break;
-			case 'f': // f flag will be followed by the read in map file in the program.. 
-					{
-						//cout<<"optarg: "<<optarg<<endl; 
-						ifstream mapin( optarg );
-						if ( !mapin.is_open() )  // check if the map file is successfully opened..
-						{
-							cout<<"Cant open: "<<optarg<<endl;
-							Wrong();
-						}
-						
-						int EWNUM, NSNUM;  // number of ports..
-						mapin>>E_max, mapin>>N_max; // first line of map file..
-						mapin>>EWNUM, mapin>>NSNUM;
-						
-						for(int i=0; i<EWNUM; ++i)
-						{
-							int num;
-							mapin>>num;
-							EWRANGE.push_back(num);
-						}
-						for(int i=0; i<NSNUM; ++i)
-						{
-							int num;
-							mapin>>num;
-							NSRANGE.push_back(num);
-						}
-						mapin.close();
-				
-						sort(EWRANGE.begin(), EWRANGE.end() );
-						sort(NSRANGE.begin(), NSRANGE.end() );
-						
-						if ( EWRANGE.front() < 1 || NSRANGE.front() < 1 || EWRANGE.back() > N_max || NSRANGE.back() > E_max )
-						{
-							cout<<"Map is wrong!"<<endl;
-							Wrong();
-						}
-					}
-					break;
-			default: 
-					{
-						cout<<"wrong haha"<<endl;
-						Wrong(); 
-					}
-					break;
-		}
-	}
-	//cout<<"fine here!"<<endl;
-}
-
 int main(int argc, char *argv[])
 {
 	map<int, LR> spot;
@@ -93,81 +18,112 @@ int main(int argc, char *argv[])
 	const int nps( world.size() );
 	int car_num;
 	
+	// start checking input.. 
+	// only process 0 doing input checking part here..
 	int North_Max, East_Max;
-	//int *EWRANGE = new int[1];
-	//int *NSRANGE = new int[1];
 	vector<int> EWRANGE, NSRANGE;
-	if( myid == 0 )
+	if( myid == 0 ) 
 	{
 		Input_Check(nps, argc, argv, car_num, North_Max, East_Max, EWRANGE, NSRANGE);
+	}  
+	// input checking part finish here..
 
-		cout<<North_Max<<" "<<East_Max<<endl;
-		/*
-		for(unsigned int i=0; i<EWRANGE.size(); ++i)	cout<<EWRANGE.at(i)<<", ";
-		cout<<endl;	
-		for(unsigned int i=0; i<NSRANGE.size(); ++i)	cout<<NSRANGE.at(i)<<", ";
-		cout<<endl;	
-		*/
-	}
-
-	int ewns[4]; // to recv 4 boundary info, one array two usage..
+	// job part start here allocating..
 	int ewnum, nsnum, *ewrange, *nsrange;
 	int Bet, Bwt, Bnt, Bst;
-	if( myid == 0 )
-	{
-		ewnum = 2, nsnum = 2;
-		ewrange = new int[2];
-		nsrange = new int[2];
-		ewrange[0] = 20;
-		ewrange[1] = 40;
-		nsrange[0] = 60;
-		nsrange[1] = 80;
-		Bet = 50, Bwt = 0, Bnt = 100, Bst = 51;
-	}
-	if( myid == 1 )
-	{
-		ewnum = 2, nsnum = 2;
-		ewrange = new int[2];
-		nsrange = new int[2];
-		ewrange[0] = 60;
-		ewrange[1] = 80;
-		nsrange[0] = 60;
-		nsrange[1] = 80;
-		Bet = 100, Bwt = 51, Bnt = 100, Bst = 51;
-	}
-	if( myid == 2 )
-	{
-		ewnum = 2, nsnum = 2;
-		ewrange = new int[2];
-		nsrange = new int[2];
-		ewrange[0] = 20;
-		ewrange[1] = 40;
-		nsrange[0] = 20;
-		nsrange[1] = 40;
-		Bet = 50, Bwt = 0, Bnt = 50, Bst = 0;
-	}
-	if( myid == 3 )
-	{
-		ewnum = 2, nsnum = 2;
-		ewrange = new int[2];
-		nsrange = new int[2];
-		ewrange[0] = 60;
-		ewrange[1] = 80;
-		nsrange[0] = 20;
-		nsrange[1] = 40;
-		Bet = 100, Bwt = 51, Bnt = 50, Bst = 0;
-	}
+	int *forp0 = new int[4];
 
+	if( myid == 0 )// process 0 do job sending.. 
+	{
+		int nsblock = North_Max/sqrt(nps);
+		int ewblock =  East_Max/sqrt(nps);
+		
+		int pid = 0;
+		for(int i=sqrt(nps)-1; i>=0; --i) // loop from south to north direction..
+		{
+			Bnt = i * nsblock + nsblock;
+			Bst = i * nsblock + 1;
+			if ( i == (sqrt(nps) -1) )  Bnt = North_Max;
+			else if ( i == 0 )			Bst = 0;
+			
+			vector<int>::iterator nsitr;
+			vector<int> ns;
+			for(nsitr = NSRANGE.begin(); nsitr != NSRANGE.end(); ++nsitr)
+			{
+				if ( *nsitr > Bst && *nsitr < Bnt ) ns.push_back( *nsitr );
+			}
+
+			for(int j=0; j<sqrt(nps); ++j) // loop from west to east direction..
+			{
+				Bet = j * ewblock + ewblock;
+				Bwt = j * ewblock + 1;
+				if ( j == (sqrt(nps) -1) )  Bet = East_Max;
+				if ( j == 0 )				Bwt = 0;
+				
+				vector<int>::iterator ewitr;
+				vector<int> ew;
+				for(ewitr = EWRANGE.begin(); ewitr != EWRANGE.end(); ++ewitr)
+				{
+					if ( *ewitr > Bwt && *ewitr < Bet ) ew.push_back( *ewitr );
+				}
+				
+				if (pid == 0)
+				{
+					forp0[0] = Bet, forp0[1] = Bwt, forp0[2] = Bnt, forp0[3] = Bst;
+					ewnum = ew.size();
+					ewrange = new int[ewnum];
+					for(int jj=0; jj<ewnum; ++jj)	ewrange[jj] = ew.at(jj);
+					
+					nsnum = ns.size();
+					nsrange = new int[nsnum];
+					for(int ii=0; ii<nsnum; ++ii)   nsrange[ii] = ns.at(ii);
+				}
+				else
+				{
+					int limit4[4] = { Bet, Bwt, Bnt, Bst};
+					world.send(pid, 444, limit4);
+					world.send(pid, 333, ns);
+					world.send(pid, 222, ew);
+				}
+				pid++;
+			}
+		}
+	}
+	else			// other processes recv job..
+	{
+		int limit4[4];
+		world.recv(0, 444, limit4);
+		Bet = limit4[0], Bwt = limit4[1], Bnt = limit4[2], Bst = limit4[3];
+		
+		vector<int> ew;
+		vector<int> ns;
+		world.recv(0, 333, ns);
+		world.recv(0, 222, ew);
+		
+		ewnum = ew.size();
+		ewrange = new int[ewnum];
+		for(int jj=0; jj<ewnum; ++jj) ewrange[jj] = ew.at(jj);
+		
+		nsnum = ns.size();
+		nsrange = new int[nsnum];
+		for(int ii=0; ii<nsnum; ++ii) nsrange[ii] = ns.at(ii);
+	}	
+	
+	if(myid == 0) { Bet = forp0[0], Bwt = forp0[1], Bnt = forp0[2], Bst = forp0[3];	}
+	delete[] forp0;
+	// job part finish here allocating..
+
+	// map constructing part start here..
 	BOUND bound(Bet, Bwt, Bnt, Bst, ewnum, nsnum, ewrange, nsrange);
-
+	int ewns[4]; // to recv 4 boundary info, one array two usage..
 	for(int i=0; i<4; ++i)
 	{
 		ewns[i] = comap4[myid][i];
-		// ewns[i] = Sixteen[myid][i];
 	}
-	
 	bound.Construct(spot, cross, ewns); // construct the map in this process..
-	
+	// map constructing part finish here..
+
+	// car insert part..
 	if(myid == 0)
 	{
 		cout<<"This is test of p 0"<<endl;
@@ -182,6 +138,7 @@ int main(int argc, char *argv[])
 		if ( spotitr != spot.end() )	spotitr->second.rt = 1;
 		else 							cout<<"wrong!!"<<endl<<endl;
 	}
+	// car insert part..
 
 	srand48(time(NULL));
 /*
@@ -226,7 +183,7 @@ int main(int argc, char *argv[])
 */
 	if(myid == 0) cout<<"simulation start!"<<endl;
 
-	int time_i = 0, time_max = 1;
+	int time_i = 0, time_max = 2;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		world.barrier();
