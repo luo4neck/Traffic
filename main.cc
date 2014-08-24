@@ -3,6 +3,12 @@ using namespace std;
 
 const double p_randomization= 0.05; // probability of randomization..
 
+bool Add_Car(list<class CAR> &car, const int car_num, BOUND bound, map<int, LR> &spot)
+{
+	
+	return 1;
+}
+
 int main(int argc, char *argv[])
 {
 	map<int, LR> spot;
@@ -118,7 +124,10 @@ int main(int argc, char *argv[])
 	int ewns[4]; // to recv 4 boundary info, one array two usage..
 	for(int i=0; i<4; ++i)
 	{
-		ewns[i] = comap4[myid][i];
+		if( nps == 4 )			ewns[i] = comap4[myid][i];
+		else if ( nps == 16)	ewns[i] = comap16[myid][i];
+		else 	  				ewns[i] = comap64[myid][i];
+	
 	}
 	bound.Construct(spot, cross, ewns); // construct the map in this process..
 	// map constructing part finish here..
@@ -128,22 +137,24 @@ int main(int argc, char *argv[])
 	{
 		cout<<"This is test of p 0"<<endl;
 		string PATH = "srrssllssss";
-		CAR newcar(48, 60, EAST, PATH);
+		CAR newcar(48, 160, EAST, PATH);
 		car.push_back(newcar);
 		
-		CAR newcar1(46, 60, EAST, PATH);
+		CAR newcar1(46, 160, EAST, PATH);
 		car.push_back(newcar1);
 		
-		spotitr = spot.find( XYtoKEY( 48, 60 ));
+		spotitr = spot.find( XYtoKEY( 48, 160 ));
 		if ( spotitr != spot.end() )	spotitr->second.rt = 1;
 		else 							cout<<"wrong!!"<<endl<<endl;
 	}
-	// car insert part..
 
-	srand48(time(NULL));
-/*
-	for(int i=0; i < car_num; ++i) // constructing the cars in this process..
+	srand48(time(NULL) + pow(myid, 5) );
+	for(int i=0; i < car_num;) // constructing the cars in this process..
 	{
+		if( Add_Car(car, car_num, bound, spot) ) ++i;
+	}
+	// car insert part..
+/*
 		bool check = 1;
 		while(check) 
 		{
@@ -183,7 +194,7 @@ int main(int argc, char *argv[])
 */
 	if(myid == 0) cout<<"simulation start!"<<endl;
 
-	int time_i = 0, time_max = 2;
+	int time_i = 0, time_max = 60;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		world.barrier();
@@ -257,7 +268,6 @@ int main(int argc, char *argv[])
 			char turn = caritr->path[0];
 			int newx(0), newy(0), newdrct(0);
 			bool rand = 1; // deal with the randomization..
-			//if ( drand48() < p_randomization ) rand = 1; // 0 is do randomization..
 			if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
 			
 			cout<<"rand "<<rand<<endl;
@@ -305,7 +315,6 @@ int main(int argc, char *argv[])
 		
 		car.remove_if( check_del() );
 		world.barrier();
-		//sleep(1);
 		
 		//car exchange part..
 		list<class CAR> ERCAR, WRCAR, NRCAR, SRCAR; // list of cars recved from e w n s..

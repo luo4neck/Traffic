@@ -4,7 +4,7 @@ using namespace std;
 
 void Wrong()
 {
-	cout<<"Input is wrong! Please input as:"<<endl;
+	//cout<<"Input is wrong! Please input as:"<<endl;
 	cout<<" $ mpirun -n 4 ./ main -v 100 -f map.dat"<<endl;
 	cout<<"Flag v means the number of vehicles in the map,"<<endl;
 	cout<<"Flag f means the map file."<<endl;
@@ -14,6 +14,12 @@ void Wrong()
 void Input_Check(const int nps, int argc, char *argv[], int &car_num, int &N_max, int &E_max, vector<int> &EWRANGE, vector<int> &NSRANGE)
 // this function will be used to check all input variables..
 {	
+	if (nps != 4 && nps != 16 && nps != 64)
+	{
+		cout<<"Number of process is wrong!"<<endl;
+		Wrong();
+	}
+
 	int ch;
 	opterr = 0;
 	while(( ch = getopt(argc, argv, "v:f:")) != -1 )
@@ -85,6 +91,7 @@ void Input_Check(const int nps, int argc, char *argv[], int &car_num, int &N_max
 	}
 }
 
+/*  upside is input checking, down side is spot and cross */
 
 struct LR
 // used to construct the spot of map..
@@ -310,6 +317,17 @@ class BOUND
 	{
 		delete[] EWpnt;
 		delete[] NSpnt;
+	}
+
+	const int EW_pnt(int i)
+	{
+		if(i>=0 && i<EWnum)
+		return EWpnt[i];
+	}
+	const int NS_pnt(int i)
+	{
+		if(i>=0 && i<NSnum)
+		return NSpnt[i];
 	}
 
 	const int Et()		  { return et; }
