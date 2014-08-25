@@ -16,14 +16,14 @@ int main()
 	
 	// session 4
 	cout<<"Map constructing..."<<endl;
-	int ewnum = 20;
-	int nsnum = 20;
+	int ewnum = 16;
+	int nsnum = 16;
 	int *ewrange = new int[ewnum]; 
 	int *nsrange = new int[nsnum];
 	for(int i=0; i<ewnum; ++i) {	ewrange[i] = 100 * i + 50;	}
 	for(int i=0; i<nsnum; ++i) {	nsrange[i] = 100 * i + 50;	}
 	
-	BOUND bound(2000, 0, 2000, 0, ewnum, nsnum, ewrange, nsrange);
+	BOUND bound(1600, 0, 1600, 0, ewnum, nsnum, ewrange, nsrange);
 			  //e,    w, n,    s, 
 	bound.Construct(spot, cross); // construct the map in this process..
 	// session 4	
