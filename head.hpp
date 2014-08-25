@@ -470,8 +470,8 @@ class BOUND
 	}
 
 };
-/*  upside is class BOUND, down side is car adding */
 
+/*  upside is class BOUND, down side is car adding */
 
 void Add_Car(const BOUND &bound, list<class CAR> &car, const int ew, const int ns, const int car_num, map<int, LR> &spot)
 {
