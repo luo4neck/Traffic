@@ -145,13 +145,16 @@ int main(int argc, char *argv[])
 	srand48(time(NULL) + pow(myid, 5) );
 	// constructing the cars in this process..
 	car_num = car_num/nps;
-	if(myid == 0 ) Add_Car(bound, car, ewnum, nsnum, car_num, spot); 
+	Add_Car(bound, car, ewnum, nsnum, car_num, spot); 
+	//if(myid == 0 ) Add_Car(bound, car, ewnum, nsnum, car_num, spot); 
 	world.barrier();
 	// car insert part..
 	
-	if(myid == 0) cout<<"simulation start!"<<endl;
 
 	int time_i = 0, time_max = 2;
+	time_t start = time(NULL);
+
+	if(myid == 0) cout<<"simulation start!"<<endl;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		world.barrier();
@@ -228,8 +231,8 @@ int main(int argc, char *argv[])
 			bool rand = 1; // deal with the randomization..
 			if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
 			
-			cout<<"rand "<<rand<<endl;
-			cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
+			//cout<<"rand "<<rand<<endl;
+			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
 			caritr->Move(newx, newy, newdrct, spot);
@@ -258,12 +261,12 @@ int main(int argc, char *argv[])
 				SSCAR.push_back(newcar);
 				caritr->del = 1;
 			}
-			cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
+			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 		}
 
 		for(caritr = car.begin(); caritr != car.end(); ++caritr)
 		{
-			cout<<"time: "<<time_i<<" in proc "<<myid<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<" "<<caritr->path<<endl<<endl;
+		//	cout<<"time: "<<time_i<<" in proc "<<myid<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<" "<<caritr->path<<endl<<endl;
 			if (caritr->del == 1)
 			{
 				if(caritr->DRCT()%2 == 0 ) spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].rt = 0;
@@ -298,7 +301,7 @@ int main(int argc, char *argv[])
 		}
 		
 		boost::mpi::wait_all(req, req+8);	//waitall
-		if(myid == 2) cout<<"time: "<<time_i<<" "<<ERCAR.size()<<" "<<WRCAR.size()<<" "<<NRCAR.size()<<" "<<SRCAR.size()<<endl;
+		//if(myid == 2) cout<<"time: "<<time_i<<" "<<ERCAR.size()<<" "<<WRCAR.size()<<" "<<NRCAR.size()<<" "<<SRCAR.size()<<endl;
 		
 		if( ewns[EAST]  >= 0 ) // move recieved cars into car..
 		{	
@@ -341,7 +344,9 @@ int main(int argc, char *argv[])
 			car.splice(car.begin(), SRCAR);
 		}
 		//car exchange part..
-
+		
+		time_t end = time(NULL);
+		if(myid == 0) cout<<end-start<<" seconds spent for this step"<<endl<<endl;
 		time_i++;
 	}
 
