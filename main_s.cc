@@ -34,13 +34,13 @@ int main(int argc, char *argv[])
 	//if(myid == 0)
 	{
 		cout<<"This is test of p 0"<<endl;
-		string PATH = "srrssllssss";
+		string PATH = "srssssss";
 		CAR newcar(48, 60, EAST, PATH);
 		car.push_back(newcar);
 		
-		string PATH1 = "ssrrssllssss";
-		CAR newcar1(38, 60, EAST, PATH1);
-		//car.push_back(newcar1);
+		string PATH1 = "ssrssssss";
+		CAR newcar1(30, 60, EAST, PATH1);
+		car.push_back(newcar1);
 		
 		spotitr = spot.find( XYtoKEY( 48, 60 ));
 		if ( spotitr != spot.end() )	spotitr->second.rt = 1;
@@ -48,10 +48,9 @@ int main(int argc, char *argv[])
 	}
 
 	srand48(time(NULL));
-	
 	cout<<"simulation start!"<<endl;
 
-	int time_i = 0, time_max = 60;
+	int time_i = 0, time_max = 25;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		//if (myid == 0)	cout<<"At time "<<time_i<<" "<<endl;
@@ -86,6 +85,7 @@ int main(int argc, char *argv[])
 																						
 		car.remove_if( check_del() );
 	}
+	
 	for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
 	{
 		cout<<"time "<<time_i<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->path<<endl;

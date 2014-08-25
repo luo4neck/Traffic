@@ -16,14 +16,12 @@ int main(int argc, char *argv[])
 	boost::mpi::communicator world;
 	const int myid( world.rank() );
 	const int nps( world.size() );
-	int car_num;
+	//int car_num;
 
 	int ewns[4]; // to recv 4 boundary info, one array two usage..
 	int ewnum, nsnum, *ewrange, *nsrange;
 	int Bet, Bwt, Bnt, Bst;
 
-if(nps == 4)
-{
 	if( myid == 0 )
 	{
 		ewnum = 2, nsnum = 2;
@@ -68,23 +66,7 @@ if(nps == 4)
 		nsrange[1] = 40;
 		Bet = 100, Bwt = 51, Bnt = 50, Bst = 0;
 	}
-}
-else  // nps == 1
-{
-		ewnum = 4, nsnum = 2;
-		ewrange = new int[4];
-		nsrange = new int[4];
-		ewrange[0] = 20;
-		ewrange[1] = 40;
-		ewrange[2] = 60;
-		ewrange[3] = 80;
-		
-		nsrange[0] = 20;
-		nsrange[1] = 40;
-		nsrange[2] = 60;
-		nsrange[3] = 80;
-		Bet = 100, Bwt = 0, Bnt = 100, Bst = 0;
-}
+	
 	BOUND bound(Bet, Bwt, Bnt, Bst, ewnum, nsnum, ewrange, nsrange);
 
 	for(int i=0; i<4; ++i)
@@ -97,13 +79,13 @@ else  // nps == 1
 	if(myid == 0)
 	{
 		cout<<"This is test of p 0"<<endl;
-		string PATH = "srrssllssss";
+		string PATH = "srssssss";
 		CAR newcar(48, 60, EAST, PATH);
 		car.push_back(newcar);
 		
-		string PATH1 = "ssrrssllssss";
-		CAR newcar1(38, 60, EAST, PATH1);
-		//car.push_back(newcar1);
+		string PATH1 = "ssrssssss";
+		CAR newcar1(30, 60, EAST, PATH1);
+		car.push_back(newcar1);
 		
 		spotitr = spot.find( XYtoKEY( 48, 60 ));
 		if ( spotitr != spot.end() )	spotitr->second.rt = 1;
@@ -114,7 +96,7 @@ else  // nps == 1
 	
 	if(myid == 0) cout<<"simulation start!"<<endl;
 
-	int time_i = 0, time_max = 60;
+	int time_i = 0, time_max = 25;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		world.barrier();
@@ -190,7 +172,7 @@ else  // nps == 1
 			if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
 			
 			//cout<<"rand "<<rand<<endl;
-			cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
+			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
 			caritr->Move(newx, newy, newdrct, spot);
@@ -219,8 +201,11 @@ else  // nps == 1
 				SSCAR.push_back(newcar);
 				caritr->del = 1;
 			}
-			cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
+			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 		}
+		
+		//if(time_i == 31 && myid == 3 ) cout<<"rt: "<<spot[ XYtoKEY(50, 40) ].rt<<",lt: "<<spot[XYtoKEY(50, 40) ].lt<<endl;
+		//if(time_i == 32 && myid == 3 ) cout<<"rt: "<<spot[ XYtoKEY(50, 40) ].rt<<",lt: "<<spot[XYtoKEY(50, 40) ].lt<<endl;
 
 		for(caritr = car.begin(); caritr != car.end(); ++caritr)
 		{
@@ -231,11 +216,12 @@ else  // nps == 1
 				else					   spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].lt = 0;
 			}
 		}
-		if(myid == 0 ) cout<<endl;
+		if(time_i == 31 && myid == 3 ) cout<<"rt: "<<spot[ XYtoKEY(50, 40) ].rt<<",lt: "<<spot[XYtoKEY(50, 40) ].lt<<endl;
 
 		car.remove_if( check_del() );
+		if(myid == 0 ) cout<<endl;
 		world.barrier();
-		//sleep(1);
+		sleep(1);
 		
 		//car exchange part..
 		list<class CAR> ERCAR, WRCAR, NRCAR, SRCAR; // list of cars recved from e w n s..
