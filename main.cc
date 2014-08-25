@@ -3,10 +3,81 @@ using namespace std;
 
 const double p_randomization= 0.05; // probability of randomization..
 
-bool Add_Car(list<class CAR> &car, const int car_num, BOUND bound, map<int, LR> &spot)
+void Add_Car(const BOUND &bound, list<class CAR> &car, const int ew, const int ns, const int car_num, map<int, LR> &spot)
 {
+	list<class CAR>::iterator citr;  // iterator of cars..
+	map<int, LR>::iterator sitr;	// iterator of spots..
+	for(int i=0; i<car_num/2; ++i)  // cars on e-w direction road..
+	{
+		bool check = 1;
+		while(check)
+		{
+			int x, y, drct, length;
+			y = bound.NS_pnt( lrand48()%ns );
+			x = bound.Wt() + lrand48()% (bound.Et() - bound.Wt());
+			if(drand48() > 0.5 ) drct = EAST;
+			else				 drct = WEST;
+			
+			sitr = spot.find( XYtoKEY(x, y));
+			if( sitr == spot.end() || (drct == EAST && sitr->second.rt == 1) || (drct == WEST && sitr->second.lt == 1) )
+			{	check = 1;	}
+			else
+			{
+				check = 0;
+				length = lrand48()%15;
+				char *P = new char[length];
+				char S('s'), L('l'), R('r');
+				for(int j=0; j<length; ++j) 
+				{
+					if(drand48() < 0.2 ) 	P[i] = R;
+					else if(drand48() > 0.8)P[i] = L;
+					else					P[i] = S;
+				}
+				string path = P;
+				CAR newcar(x, y, drct, path);
+				car.push_back(newcar);
+									
+				if(drct == EAST) sitr->second.rt = 1;
+				else			 sitr->second.lt = 1;
+			}
+		}
+	}
 	
-	return 1;
+	for(int i=0; i<car_num/2; ++i)  // cars on n-s direction road..
+	{
+		bool check = 1;
+		while(check)
+		{
+			int x, y, drct, length;
+			x = bound.EW_pnt( lrand48()%ew );
+			y = bound.St() + lrand48()% (bound.Nt() - bound.St());
+			if(drand48() > 0.5 ) drct = SOUTH;
+			else				 drct = NORTH;
+			
+			sitr = spot.find( XYtoKEY(x, y));
+			if( sitr == spot.end() || (drct ==NORTH && sitr->second.rt == 1) || (drct ==SOUTH && sitr->second.lt == 1) )
+			{	check = 1;	}
+			else
+			{
+				check = 0;
+				length = lrand48()%15;
+				char *P = new char[length];
+				char S('s'), L('l'), R('r');
+				for(int j=0; j<length; ++j) 
+				{
+					if(drand48() < 0.2 ) 	P[i] = R;
+					else if(drand48() > 0.8)P[i] = L;
+					else					P[i] = S;
+				}
+				string path = P;
+				CAR newcar(x, y, drct, path);
+				car.push_back(newcar);
+					
+				if(drct == NORTH) sitr->second.rt = 1;
+				else			  sitr->second.lt = 1;
+			}
+		}
+	}
 }
 
 int main(int argc, char *argv[])
@@ -86,8 +157,8 @@ int main(int argc, char *argv[])
 				}
 				else
 				{
-					int limit4[4] = { Bet, Bwt, Bnt, Bst};
-					world.send(pid, 444, limit4);
+					int limit5[5] = { Bet, Bwt, Bnt, Bst, car_num};
+					world.send(pid, 444, limit5);
 					world.send(pid, 333, ns);
 					world.send(pid, 222, ew);
 				}
@@ -97,9 +168,9 @@ int main(int argc, char *argv[])
 	}
 	else			// other processes recv job..
 	{
-		int limit4[4];
-		world.recv(0, 444, limit4);
-		Bet = limit4[0], Bwt = limit4[1], Bnt = limit4[2], Bst = limit4[3];
+		int limit5[5];
+		world.recv(0, 444, limit5);
+		Bet = limit5[0], Bwt = limit5[1], Bnt = limit5[2], Bst = limit5[3], car_num = limit5[4];
 		
 		vector<int> ew;
 		vector<int> ns;
@@ -149,10 +220,10 @@ int main(int argc, char *argv[])
 	}
 
 	srand48(time(NULL) + pow(myid, 5) );
-	for(int i=0; i < car_num;) // constructing the cars in this process..
-	{
-		if( Add_Car(car, car_num, bound, spot) ) ++i;
-	}
+	// constructing the cars in this process..
+	car_num = car_num/nps;
+	Add_Car(bound, car, ewnum, nsnum, car_num, spot); 
+	world.barrier();
 	// car insert part..
 /*
 		bool check = 1;
@@ -194,7 +265,7 @@ int main(int argc, char *argv[])
 */
 	if(myid == 0) cout<<"simulation start!"<<endl;
 
-	int time_i = 0, time_max = 60;
+	int time_i = 0, time_max = 2;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		world.barrier();
@@ -233,6 +304,7 @@ int main(int argc, char *argv[])
 			req[6] = world.isend( ewns[SOUTH], myid+100, SS); // process id+10 of sender is the tag..
 			req[7] = world.irecv( ewns[SOUTH], ewns[SOUTH]+100, RS);
 		}
+		//cout<<"fine here"<<endl;
 		
 		boost::mpi::wait_all(req, req+8);	//waitall
 		

@@ -135,7 +135,7 @@ int XYtoKEY(int x, int y)
 {
 	if ( x>99999 || y>99999 ) 
 	{
-		printf("input is wrong!");
+		printf("x = %d, y = %d, input is wrong!", x, y);
 		exit(-1);
 	}
 	return x*10000 + y;
@@ -319,18 +319,18 @@ class BOUND
 		delete[] NSpnt;
 	}
 
-	const int EW_pnt(int i)
+	int EW_pnt (int i) const 
 	{
-		if(i>=0 && i<EWnum)
-		return EWpnt[i];
+		if(i>=0 && i<EWnum) return EWpnt[i];
+		else {	Wrong(); return -1;	}
 	}
-	const int NS_pnt(int i)
+	int NS_pnt (int i) const 
 	{
-		if(i>=0 && i<NSnum)
-		return NSpnt[i];
+		if(i>=0 && i<NSnum)	return NSpnt[i];
+		else {	Wrong(); return -1;	}
 	}
 
-	const int Et()		  { return et; }
+	int Et()const 		  { return et; }
 	const int Etin()  { return et - 4; }
 	const int Etout() { return et + 5; }
 	void Epackout(map<int, LR> &ES, map<int, LR> spot)
@@ -341,13 +341,14 @@ class BOUND
 			for(int j = Etin(); j<= Et(); ++j)
 			{
 				int x = j;
+			//	cout<<x<<" "<<y<<endl;
 				ES[ XYtoKEY(x,y) ].rt = spot[ XYtoKEY(x,y) ].rt; 
 				ES[ XYtoKEY(x,y) ].lt = spot[ XYtoKEY(x,y) ].lt; 
 			}
 		}
 	}
 
-	const int Wt()		  { return wt; }
+	int Wt()const 		  { return wt; }
 	const int Wtin()  { return wt + 4; }
 	const int Wtout() { return wt - 5; }
 	void Wpackout(map<int, LR> &WS, map<int, LR> spot)
@@ -364,7 +365,7 @@ class BOUND
 		}
 	}
 	
-	const int Nt() 		  { return nt; }
+	int Nt()const  		  { return nt; }
 	const int Ntin()  { return nt - 4; }
 	const int Ntout() { return nt + 5; }
 	void Npackout(map<int, LR> &NS, map<int, LR> spot)
@@ -381,7 +382,7 @@ class BOUND
 		}
 	}
 	
-	const int St() 		  { return st; }
+	int St()const  		  { return st; }
 	const int Stin()  { return st + 4; }
 	const int Stout() { return st - 5; }
 	void Spackout(map<int, LR> &SS, map<int, LR> spot)
@@ -466,7 +467,6 @@ class BOUND
 	//			cout<<x<<" "<<y<<endl;//session 3..;
 			}
 		}
-		//file.close();
 	}
 
 };
