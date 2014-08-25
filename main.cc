@@ -3,83 +3,6 @@ using namespace std;
 
 const double p_randomization= 0.05; // probability of randomization..
 
-void Add_Car(const BOUND &bound, list<class CAR> &car, const int ew, const int ns, const int car_num, map<int, LR> &spot)
-{
-	list<class CAR>::iterator citr;  // iterator of cars..
-	map<int, LR>::iterator sitr;	// iterator of spots..
-	for(int i=0; i<car_num/2; ++i)  // cars on e-w direction road..
-	{
-		bool check = 1;
-		while(check)
-		{
-			int x, y, drct, length;
-			y = bound.NS_pnt( lrand48()%ns );
-			x = bound.Wt() + lrand48()% (bound.Et() - bound.Wt());
-			if(drand48() > 0.5 ) drct = EAST;
-			else				 drct = WEST;
-			
-			sitr = spot.find( XYtoKEY(x, y));
-			if( sitr == spot.end() || (drct == EAST && sitr->second.rt == 1) || (drct == WEST && sitr->second.lt == 1) )
-			{	check = 1;	}
-			else
-			{
-				check = 0;
-				length = lrand48()%15;
-				char *P = new char[length];
-				char S('s'), L('l'), R('r');
-				for(int j=0; j<length; ++j) 
-				{
-					if(drand48() < 0.2 ) 	P[i] = R;
-					else if(drand48() > 0.8)P[i] = L;
-					else					P[i] = S;
-				}
-				string path = P;
-				CAR newcar(x, y, drct, path);
-				car.push_back(newcar);
-									
-				if(drct == EAST) sitr->second.rt = 1;
-				else			 sitr->second.lt = 1;
-			}
-		}
-	}
-	
-	for(int i=0; i<car_num/2; ++i)  // cars on n-s direction road..
-	{
-		bool check = 1;
-		while(check)
-		{
-			int x, y, drct, length;
-			x = bound.EW_pnt( lrand48()%ew );
-			y = bound.St() + lrand48()% (bound.Nt() - bound.St());
-			if(drand48() > 0.5 ) drct = SOUTH;
-			else				 drct = NORTH;
-			
-			sitr = spot.find( XYtoKEY(x, y));
-			if( sitr == spot.end() || (drct ==NORTH && sitr->second.rt == 1) || (drct ==SOUTH && sitr->second.lt == 1) )
-			{	check = 1;	}
-			else
-			{
-				check = 0;
-				length = lrand48()%15;
-				char *P = new char[length];
-				char S('s'), L('l'), R('r');
-				for(int j=0; j<length; ++j) 
-				{
-					if(drand48() < 0.2 ) 	P[i] = R;
-					else if(drand48() > 0.8)P[i] = L;
-					else					P[i] = S;
-				}
-				string path = P;
-				CAR newcar(x, y, drct, path);
-				car.push_back(newcar);
-					
-				if(drct == NORTH) sitr->second.rt = 1;
-				else			  sitr->second.lt = 1;
-			}
-		}
-	}
-}
-
 int main(int argc, char *argv[])
 {
 	map<int, LR> spot;
@@ -204,7 +127,7 @@ int main(int argc, char *argv[])
 	// map constructing part finish here..
 
 	// car insert part..
-	if(myid == 0)
+	if(myid == -1)
 	{
 		cout<<"This is test of p 0"<<endl;
 		string PATH = "srrssllssss";
@@ -222,47 +145,10 @@ int main(int argc, char *argv[])
 	srand48(time(NULL) + pow(myid, 5) );
 	// constructing the cars in this process..
 	car_num = car_num/nps;
-	Add_Car(bound, car, ewnum, nsnum, car_num, spot); 
+	if(myid == 0 ) Add_Car(bound, car, ewnum, nsnum, car_num, spot); 
 	world.barrier();
 	// car insert part..
-/*
-		bool check = 1;
-		while(check) 
-		{
-			int x, y, drct;
-			if( i < car_num/2 )  // cars on ew road..
-			{
-				y = nsrange[ lrand48()%nsnum ];
-				x =	lrand48() % bound.Et();
-				double random = drand48();
-				if( random < 0.5 ) 	drct = EAST;
-				else				drct = WEST;
-			}
-			else // cars on ns road..
-			{
-				x = ewrange[ lrand48()%ewnum ];
-				y =	lrand48() % bound.Nt();
-				double random = drand48();
-				if( random < 0.5 ) 	drct = SOUTH;
-				else				drct = NORTH;
-			}
-		
-			CAR newcar(x, y, drct);
-			spotitr = spot.find( XYtoKEY( x, y) );
-			if (spotitr != spot.end() )
-			{
-				if ( !((newcar.DRCT()%2 == 0 && spotitr->second.rt == 1) || (newcar.DRCT()%2 == 1 && spotitr->second.lt == 1)) )
-				{
-					if ( newcar.DRCT()%2 == 0)  spotitr->second.rt = 1;  // go to north or east..
-					else                       	spotitr->second.lt = 1;	 // goto west or south.. 
-					
-					car.push_back(newcar);
-					check = 0;
-				}
-			}
-		}
-	}
-*/
+	
 	if(myid == 0) cout<<"simulation start!"<<endl;
 
 	int time_i = 0, time_max = 2;
@@ -459,6 +345,5 @@ int main(int argc, char *argv[])
 		time_i++;
 	}
 
-	//system("convert -delay 25 -loop 0 *.png Moving.gif\n");	// session 4..
 	return 0;
 }

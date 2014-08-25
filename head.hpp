@@ -470,4 +470,78 @@ class BOUND
 	}
 
 };
-/*  upside is class BOUND, down side are test code */
+/*  upside is class BOUND, down side is car adding */
+
+
+void Add_Car(const BOUND &bound, list<class CAR> &car, const int ew, const int ns, const int car_num, map<int, LR> &spot)
+{
+	list<class CAR>::iterator citr;  // iterator of cars..
+	map<int, LR>::iterator sitr;	// iterator of spots..
+	for(int i=0; i<car_num/2; ++i)  // cars on e-w direction road..
+	{
+		bool check = 1;
+		while(check)
+		{
+			int x, y, drct, length;
+			y = bound.NS_pnt( lrand48()%ns );
+			x = bound.Wt() + lrand48()% (bound.Et() - bound.Wt());
+			if(drand48() > 0.5 ) drct = EAST;
+			else				 drct = WEST;
+			
+			sitr = spot.find( XYtoKEY(x, y));
+			if( sitr == spot.end() || (drct == EAST && sitr->second.rt == 1) || (drct == WEST && sitr->second.lt == 1) )
+			{	check = 1;	}
+			else
+			{
+				check = 0;
+				length = 3 + lrand48()%12;
+				string path;
+				for(int j=0; j<length; ++j) 
+				{
+					double rand = drand48();
+					if(rand < 0.15) 		path.insert(0, "r");
+					else if(rand > 0.85)	path.insert(0, "l");
+					else 					path.insert(0, "s");
+				}
+				CAR newcar(x, y, drct, path);
+				car.push_back(newcar);
+				if(drct == EAST) sitr->second.rt = 1;
+				else			 sitr->second.lt = 1;
+			}
+		}
+	}
+	
+	for(int i=0; i<car_num/2; ++i)  // cars on n-s direction road..
+	{
+		bool check = 1;
+		while(check)
+		{
+			int x, y, drct, length;
+			x = bound.EW_pnt( lrand48()%ew );
+			y = bound.St() + lrand48()% (bound.Nt() - bound.St());
+			if(drand48() > 0.5 ) drct = SOUTH;
+			else				 drct = NORTH;
+			
+			sitr = spot.find( XYtoKEY(x, y));
+			if( sitr == spot.end() || (drct ==NORTH && sitr->second.rt == 1) || (drct ==SOUTH && sitr->second.lt == 1) )
+			{	check = 1;	}
+			else
+			{
+				check = 0;
+				length = 3 + lrand48()%12;
+				string path; 
+				for(int j=0; j<length; ++j) 
+				{
+					double rand = drand48();
+					if(rand < 0.15) 		path.insert(0, "r");
+					else if(rand > 0.85)	path.insert(0, "l");
+					else 					path.insert(0, "s");
+				}
+				CAR newcar(x, y, drct, path);
+				car.push_back(newcar);
+				if(drct == NORTH) sitr->second.rt = 1;
+				else			  sitr->second.lt = 1;
+			}
+		}
+	}
+}
