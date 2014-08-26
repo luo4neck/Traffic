@@ -33,95 +33,114 @@ int main(int argc, char *argv[])
 	int Bet, Bwt, Bnt, Bst;
 	int *forp0 = new int[4];
 
-	if( myid == 0 )// process 0 do job sending.. 
+	if(nps != 1) 
 	{
-		int nsblock = North_Max/sqrt(nps);
-		int ewblock =  East_Max/sqrt(nps);
-		
-		int pid = 0;
-		for(int i=sqrt(nps)-1; i>=0; --i) // loop from south to north direction..
+		if( myid == 0 )// process 0 do job sending.. 
 		{
-			Bnt = i * nsblock + nsblock;
-			Bst = i * nsblock + 1;
-			if ( i == (sqrt(nps) -1) )  Bnt = North_Max;
-			else if ( i == 0 )			Bst = 0;
+			int nsblock = North_Max/sqrt(nps);
+			int ewblock =  East_Max/sqrt(nps);
+		
+			int pid = 0;
+			for(int i=sqrt(nps)-1; i>=0; --i) // loop from south to north direction..
+			{
+				Bnt = i * nsblock + nsblock;
+				Bst = i * nsblock + 1;
+				if ( i == (sqrt(nps) -1) )  Bnt = North_Max;
+				else if ( i == 0 )			Bst = 0;
 			
-			vector<int>::iterator nsitr;
-			vector<int> ns;
-			for(nsitr = NSRANGE.begin(); nsitr != NSRANGE.end(); ++nsitr)
-			{
-				if ( *nsitr > Bst && *nsitr < Bnt ) ns.push_back( *nsitr );
-			}
-
-			for(int j=0; j<sqrt(nps); ++j) // loop from west to east direction..
-			{
-				Bet = j * ewblock + ewblock;
-				Bwt = j * ewblock + 1;
-				if ( j == (sqrt(nps) -1) )  Bet = East_Max;
-				if ( j == 0 )				Bwt = 0;
-				
-				vector<int>::iterator ewitr;
-				vector<int> ew;
-				for(ewitr = EWRANGE.begin(); ewitr != EWRANGE.end(); ++ewitr)
+				vector<int>::iterator nsitr;
+				vector<int> ns;
+				for(nsitr = NSRANGE.begin(); nsitr != NSRANGE.end(); ++nsitr)
 				{
-					if ( *ewitr > Bwt && *ewitr < Bet ) ew.push_back( *ewitr );
+					if ( *nsitr > Bst && *nsitr < Bnt ) ns.push_back( *nsitr );
 				}
-				
-				if (pid == 0)
+
+				for(int j=0; j<sqrt(nps); ++j) // loop from west to east direction..
 				{
-					forp0[0] = Bet, forp0[1] = Bwt, forp0[2] = Bnt, forp0[3] = Bst;
-					ewnum = ew.size();
-					ewrange = new int[ewnum];
-					for(int jj=0; jj<ewnum; ++jj)	ewrange[jj] = ew.at(jj);
+					Bet = j * ewblock + ewblock;
+					Bwt = j * ewblock + 1;
+					if ( j == (sqrt(nps) -1) )  Bet = East_Max;
+					if ( j == 0 )				Bwt = 0;
+				
+					vector<int>::iterator ewitr;
+					vector<int> ew;
+					for(ewitr = EWRANGE.begin(); ewitr != EWRANGE.end(); ++ewitr)
+					{
+						if ( *ewitr > Bwt && *ewitr < Bet ) ew.push_back( *ewitr );
+					}
 					
-					nsnum = ns.size();
-					nsrange = new int[nsnum];
-					for(int ii=0; ii<nsnum; ++ii)   nsrange[ii] = ns.at(ii);
+					if (pid == 0)
+					{
+						forp0[0] = Bet, forp0[1] = Bwt, forp0[2] = Bnt, forp0[3] = Bst;
+						ewnum = ew.size();
+						ewrange = new int[ewnum];
+						for(int jj=0; jj<ewnum; ++jj)	ewrange[jj] = ew.at(jj);
+					
+						nsnum = ns.size();
+						nsrange = new int[nsnum];
+						for(int ii=0; ii<nsnum; ++ii)   nsrange[ii] = ns.at(ii);
+					}
+					else
+					{
+						int limit5[5] = { Bet, Bwt, Bnt, Bst, car_num};
+						world.send(pid, 444, limit5);
+						world.send(pid, 333, ns);
+						world.send(pid, 222, ew);
+					}
+					pid++;
 				}
-				else
-				{
-					int limit5[5] = { Bet, Bwt, Bnt, Bst, car_num};
-					world.send(pid, 444, limit5);
-					world.send(pid, 333, ns);
-					world.send(pid, 222, ew);
-				}
-				pid++;
 			}
-		}
-	}
-	else			// other processes recv job..
-	{
-		int limit5[5];
-		world.recv(0, 444, limit5);
-		Bet = limit5[0], Bwt = limit5[1], Bnt = limit5[2], Bst = limit5[3], car_num = limit5[4];
+		}// end if of myid == 0
+		else			// other processes recv job..
+		{
+			int limit5[5];
+			world.recv(0, 444, limit5);
+			Bet = limit5[0], Bwt = limit5[1], Bnt = limit5[2], Bst = limit5[3], car_num = limit5[4];
 		
-		vector<int> ew;
-		vector<int> ns;
-		world.recv(0, 333, ns);
-		world.recv(0, 222, ew);
+			vector<int> ew, ns;
+			world.recv(0, 333, ns);
+			world.recv(0, 222, ew);
 		
-		ewnum = ew.size();
-		ewrange = new int[ewnum];
-		for(int jj=0; jj<ewnum; ++jj) ewrange[jj] = ew.at(jj);
+			ewnum = ew.size();
+			ewrange = new int[ewnum];
+			for(int jj=0; jj<ewnum; ++jj) ewrange[jj] = ew.at(jj);
 		
-		nsnum = ns.size();
-		nsrange = new int[nsnum];
-		for(int ii=0; ii<nsnum; ++ii) nsrange[ii] = ns.at(ii);
-	}	
+			nsnum = ns.size();
+			nsrange = new int[nsnum];
+			for(int ii=0; ii<nsnum; ++ii) nsrange[ii] = ns.at(ii);
+		}	
 	
-	if(myid == 0) { Bet = forp0[0], Bwt = forp0[1], Bnt = forp0[2], Bst = forp0[3];	}
-	delete[] forp0;
-	// job part finish here allocating..
-
+		if(myid == 0) { Bet = forp0[0], Bwt = forp0[1], Bnt = forp0[2], Bst = forp0[3];	}
+		delete[] forp0;
+		// job part finish here allocating..
+	} // end if of nps != 1
+	else
+	{
+		Bet = East_Max, Bwt = 0, Bnt = North_Max, Bst = 0;
+		ewnum = EWRANGE.size();
+		nsnum = NSRANGE.size();
+		ewrange = new int[ewnum];
+		nsrange = new int[nsnum];
+		
+		vector<int>::iterator itr;
+		int i=0;
+		for(itr = EWRANGE.begin(); itr != EWRANGE.end(); ++itr)
+		{ ewrange[i] = *itr; i++; }
+		i=0;	
+		for(itr = NSRANGE.begin(); itr != NSRANGE.end(); ++itr)
+		{ nsrange[i] = *itr; i++; }
+	}
+	
 	// map constructing part start here..
+	cout<<Bet<<" "<<Bwt<<" "<<Bnt<<" "<<Bst<<endl;
 	BOUND bound(Bet, Bwt, Bnt, Bst, ewnum, nsnum, ewrange, nsrange);
 	int ewns[4]; // to recv 4 boundary info, one array two usage..
 	for(int i=0; i<4; ++i)
 	{
 		if( nps == 4 )			ewns[i] = comap4[myid][i];
 		else if ( nps == 16)	ewns[i] = comap16[myid][i];
-		else 	  				ewns[i] = comap64[myid][i];
-	
+		else if ( nps == 64)	ewns[i] = comap64[myid][i];
+		else					ewns[i] = -1;
 	}
 	bound.Construct(spot, cross, ewns); // construct the map in this process..
 	// map constructing part finish here..
@@ -136,77 +155,81 @@ int main(int argc, char *argv[])
 	if(myid == 0) 
 	{	
 		cout<<endl<<"Each process simulate:"<<endl;
-		cout<<car.size()<<" vehicles "<<sizeof(car)*car.size()<<"KB"<<endl;
-		cout<<spot.size()<<" spots "<<sizeof(spot)*spot.size()<<"KB"<<endl<<endl;
+		cout<<car.size()<<" vehicles "<<sizeof(car)*car.size()/1024<<"KB"<<endl;
+		cout<<spot.size()<<" spots "<<sizeof(spot)*spot.size()/1024<<"KB"<<endl;
+		cout<<cross.size()<<" crosses "<<sizeof(cross)*cross.size()/1024<<"KB"<<endl<<endl;
 		cout<<"simulation start!"<<endl;
 	}
 	int time_i = 0, time_max = 5;
 	time_t start = time(NULL);
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
-		world.barrier();
-		//sleep(1);
-		if (myid == 0)	cout<<"At time "<<time_i<<" "<<endl;
 		if ( time_i%10 == 0 ) Signal_Switch(cross);
+		if (myid == 0)	cout<<"At time "<<time_i<<" "<<endl;
 		
-		//map exchange part.. 
-		boost::mpi::request req[8];
-		map<int, LR> RE, RW, RN, RS; // recv from east, west, north, south..
-		if( ewns[EAST] >= 0 )
+		if( nps != 1 )
 		{
-			map<int, LR> ES; // east direction send..
-			bound.Epackout(ES, spot);
-			req[0] = world.isend( ewns[EAST], myid+100, ES); // process id+10 of sender is the tag..
-			req[1] = world.irecv( ewns[EAST], ewns[EAST]+100, RE);
-		} 
-		if( ewns[WEST] >= 0 )
-		{
-			map<int, LR> WS; // west direction send..
-			bound.Wpackout(WS, spot);
-			req[2] = world.isend( ewns[WEST], myid+100, WS); // process id+10 of sender is the tag..
-			req[3] = world.irecv( ewns[WEST], ewns[WEST]+100, RW);
-		}
-		if( ewns[NORTH] >= 0 )
-		{
-			map<int, LR> NS; // north direction send..
-			bound.Npackout(NS, spot);
-			req[4] = world.isend( ewns[NORTH], myid+100, NS); // process id+10 of sender is the tag..
-			req[5] = world.irecv( ewns[NORTH], ewns[NORTH]+100, RN);
-		}
-		if( ewns[SOUTH] >= 0 )
-		{
-			map<int, LR> SS; // south direction send..
-			bound.Spackout(SS, spot);
-			req[6] = world.isend( ewns[SOUTH], myid+100, SS); // process id+10 of sender is the tag..
-			req[7] = world.irecv( ewns[SOUTH], ewns[SOUTH]+100, RS);
-		}
+			world.barrier();
+		
+			//map exchange part.. 
+			boost::mpi::request req[8];
+			map<int, LR> RE, RW, RN, RS; // recv from east, west, north, south..
+			if( ewns[EAST] >= 0 )
+			{
+				map<int, LR> ES; // east direction send..
+				bound.Epackout(ES, spot);
+				req[0] = world.isend( ewns[EAST], myid+100, ES); // process id+10 of sender is the tag..
+				req[1] = world.irecv( ewns[EAST], ewns[EAST]+100, RE);
+			} 
+			if( ewns[WEST] >= 0 )
+			{
+				map<int, LR> WS; // west direction send..
+				bound.Wpackout(WS, spot);
+				req[2] = world.isend( ewns[WEST], myid+100, WS); // process id+10 of sender is the tag..
+				req[3] = world.irecv( ewns[WEST], ewns[WEST]+100, RW);
+			}
+			if( ewns[NORTH] >= 0 )
+			{
+				map<int, LR> NS; // north direction send..
+				bound.Npackout(NS, spot);
+				req[4] = world.isend( ewns[NORTH], myid+100, NS); // process id+10 of sender is the tag..
+				req[5] = world.irecv( ewns[NORTH], ewns[NORTH]+100, RN);
+			}
+			if( ewns[SOUTH] >= 0 )
+			{
+				map<int, LR> SS; // south direction send..
+				bound.Spackout(SS, spot);
+				req[6] = world.isend( ewns[SOUTH], myid+100, SS); // process id+10 of sender is the tag..
+				req[7] = world.irecv( ewns[SOUTH], ewns[SOUTH]+100, RS);
+			}
 		//cout<<"fine here"<<endl;
 		
-		boost::mpi::wait_all(req, req+8);	//waitall
+			boost::mpi::wait_all(req, req+8);	//waitall
 		
-		if( ewns[EAST]  >= 0 ) // update spot by recieved data..
-		{
-			map<int, LR>:: iterator itr;
-			for(itr = RE.begin(); itr != RE.end(); ++itr)
-			{ spot[itr->first].lt = itr->second.lt; spot[itr->first].rt = itr->second.rt; }
-		}
-		if( ewns[WEST]  >= 0 ) // update spot by recieved data..
-		{
-			map<int, LR>:: iterator itr;
-			for(itr = RW.begin(); itr != RW.end(); ++itr)
-			{ spot[itr->first].lt = itr->second.lt; spot[itr->first].rt = itr->second.rt; }
-		}
-		if( ewns[NORTH] >= 0 ) // update spot by recieved data..
-		{
-			map<int, LR>:: iterator itr;
-			for(itr = RN.begin(); itr != RN.end(); ++itr)
-			{ spot[itr->first].lt = itr->second.lt; spot[itr->first].rt = itr->second.rt; }
-		}
-		if( ewns[SOUTH] >= 0 ) // update spot by recieved data..
-		{
-			map<int, LR>:: iterator itr;
-			for(itr = RS.begin(); itr != RS.end(); ++itr)
-			{ spot[itr->first].lt = itr->second.lt; spot[itr->first].rt = itr->second.rt; }
+			if( ewns[EAST]  >= 0 ) // update spot by recieved data..
+			{
+				map<int, LR>:: iterator itr;
+				for(itr = RE.begin(); itr != RE.end(); ++itr)
+				{ spot[itr->first].lt = itr->second.lt; spot[itr->first].rt = itr->second.rt; }
+			}
+			if( ewns[WEST]  >= 0 ) // update spot by recieved data..
+			{
+				map<int, LR>:: iterator itr;
+				for(itr = RW.begin(); itr != RW.end(); ++itr)
+				{ spot[itr->first].lt = itr->second.lt; spot[itr->first].rt = itr->second.rt; }
+			}
+			if( ewns[NORTH] >= 0 ) // update spot by recieved data..
+			{
+				map<int, LR>:: iterator itr;
+				for(itr = RN.begin(); itr != RN.end(); ++itr)
+				{ spot[itr->first].lt = itr->second.lt; spot[itr->first].rt = itr->second.rt; }
+			}
+			if( ewns[SOUTH] >= 0 ) // update spot by recieved data..
+			{
+				map<int, LR>:: iterator itr;
+				for(itr = RS.begin(); itr != RS.end(); ++itr)
+				{ spot[itr->first].lt = itr->second.lt; spot[itr->first].rt = itr->second.rt; }
+			}
 		}
 		//map exchange part..
 		
@@ -224,30 +247,33 @@ int main(int argc, char *argv[])
 			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
 			caritr->Move(newx, newy, newdrct, spot);
-			
-			if( caritr->X() > bound.Et() ) // if come out of range.. set del to 1, add to send list..
+		
+			if(nps != 1)
 			{
-				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
-				ESCAR.push_back(newcar);
-				caritr->del = 1;
-			}
-			if( caritr->X() < bound.Wt() ) // if come out of range.. set del to 1, add to send list..
-			{
-				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
-				WSCAR.push_back(newcar);
-				caritr->del = 1;
-			}
-			if( caritr->Y() > bound.Nt() ) // if come out of range.. set del to 1, add to send list..
-			{
-				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
-				NSCAR.push_back(newcar);
-				caritr->del = 1;
-			}
-			if( caritr->Y() < bound.St() ) // if come out of range.. set del to 1, add to send list..
-			{
-				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
-				SSCAR.push_back(newcar);
-				caritr->del = 1;
+				if( caritr->X() > bound.Et() ) // if come out of range.. set del to 1, add to send list..
+				{
+					CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
+					ESCAR.push_back(newcar);
+					caritr->del = 1;
+				}
+				if( caritr->X() < bound.Wt() ) // if come out of range.. set del to 1, add to send list..
+				{
+					CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
+					WSCAR.push_back(newcar);
+					caritr->del = 1;
+				}
+				if( caritr->Y() > bound.Nt() ) // if come out of range.. set del to 1, add to send list..
+				{
+					CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
+					NSCAR.push_back(newcar);
+					caritr->del = 1;
+				}
+				if( caritr->Y() < bound.St() ) // if come out of range.. set del to 1, add to send list..
+				{
+					CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
+					SSCAR.push_back(newcar);
+					caritr->del = 1;
+				}
 			}
 			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 		}
@@ -264,75 +290,80 @@ int main(int argc, char *argv[])
 		// traverse of cars..
 		
 		car.remove_if( check_del() );
-		world.barrier();
 		
-		//car exchange part..
-		list<class CAR> ERCAR, WRCAR, NRCAR, SRCAR; // list of cars recved from e w n s..
-		if( ewns[EAST]  >= 0 )
-		{
-			req[0] = world.isend( ewns[EAST], myid+100, ESCAR); // process id+10 of sender is the tag..
-			req[1] = world.irecv( ewns[EAST], ewns[EAST]+100, ERCAR);
-		}
-		if( ewns[WEST]  >= 0 )
-		{
-			req[2] = world.isend( ewns[WEST], myid+100, WSCAR); // process id+10 of sender is the tag..
-			req[3] = world.irecv( ewns[WEST], ewns[WEST]+100, WRCAR);
-		}
-		if( ewns[NORTH] >= 0 )
-		{
-			req[4] = world.isend( ewns[NORTH], myid+100, NSCAR); // process id+10 of sender is the tag..
-			req[5] = world.irecv( ewns[NORTH], ewns[NORTH]+100, NRCAR);
-		}
-		if( ewns[SOUTH] >= 0 )
-		{
-			req[6] = world.isend( ewns[SOUTH], myid+100, SSCAR); // process id+10 of sender is the tag..
-			req[7] = world.irecv( ewns[SOUTH], ewns[SOUTH]+100, SRCAR);
-		}
+		if(nps != 1) 
+		{	
+			world.barrier();
+			boost::mpi::request req[8];
+			
+			//car exchange part..
+			list<class CAR> ERCAR, WRCAR, NRCAR, SRCAR; // list of cars recved from e w n s..
+			if( ewns[EAST]  >= 0 )
+			{
+				req[0] = world.isend( ewns[EAST], myid+100, ESCAR); // process id+10 of sender is the tag..
+				req[1] = world.irecv( ewns[EAST], ewns[EAST]+100, ERCAR);
+			}
+			if( ewns[WEST]  >= 0 )
+			{
+				req[2] = world.isend( ewns[WEST], myid+100, WSCAR); // process id+10 of sender is the tag..
+				req[3] = world.irecv( ewns[WEST], ewns[WEST]+100, WRCAR);
+			}
+			if( ewns[NORTH] >= 0 )
+			{
+				req[4] = world.isend( ewns[NORTH], myid+100, NSCAR); // process id+10 of sender is the tag..
+				req[5] = world.irecv( ewns[NORTH], ewns[NORTH]+100, NRCAR);
+			}
+			if( ewns[SOUTH] >= 0 )
+			{
+				req[6] = world.isend( ewns[SOUTH], myid+100, SSCAR); // process id+10 of sender is the tag..
+				req[7] = world.irecv( ewns[SOUTH], ewns[SOUTH]+100, SRCAR);
+			}
 		
-		boost::mpi::wait_all(req, req+8);	//waitall
+			boost::mpi::wait_all(req, req+8);	//waitall
 		//if(myid == 2) cout<<"time: "<<time_i<<" "<<ERCAR.size()<<" "<<WRCAR.size()<<" "<<NRCAR.size()<<" "<<SRCAR.size()<<endl;
 		
-		if( ewns[EAST]  >= 0 ) // move recieved cars into car..
-		{	
-			list<class CAR>::iterator itr;
-			for(itr = ERCAR.begin(); itr != ERCAR.end(); ++itr)
-			{
-				if (itr->DRCT()%2 == 0)	spot[ XYtoKEY( itr->X(), itr->Y() ) ].rt = 1;
-				else					spot[ XYtoKEY( itr->X(), itr->Y() ) ].lt = 1;
+			if( ewns[EAST]  >= 0 ) // move recieved cars into car..
+			{	
+				list<class CAR>::iterator itr;
+				for(itr = ERCAR.begin(); itr != ERCAR.end(); ++itr)
+				{
+					if (itr->DRCT()%2 == 0)	spot[ XYtoKEY( itr->X(), itr->Y() ) ].rt = 1;
+					else					spot[ XYtoKEY( itr->X(), itr->Y() ) ].lt = 1;
+				}
+				car.splice(car.begin(), ERCAR);
 			}
-			car.splice(car.begin(), ERCAR);
-		}
-		if( ewns[WEST]  >= 0 )  // move recieved cars into car..
-		{
-			list<class CAR>::iterator itr;
-			for(itr = WRCAR.begin(); itr != WRCAR.end(); ++itr)
+			if( ewns[WEST]  >= 0 )  // move recieved cars into car..
 			{
-				if (itr->DRCT()%2 == 0)	spot[ XYtoKEY( itr->X(), itr->Y() ) ].rt = 1;
-				else					spot[ XYtoKEY( itr->X(), itr->Y() ) ].lt = 1;
+				list<class CAR>::iterator itr;
+				for(itr = WRCAR.begin(); itr != WRCAR.end(); ++itr)
+				{
+					if (itr->DRCT()%2 == 0)	spot[ XYtoKEY( itr->X(), itr->Y() ) ].rt = 1;
+					else					spot[ XYtoKEY( itr->X(), itr->Y() ) ].lt = 1;
+				}
+				car.splice(car.begin(), WRCAR);
 			}
-			car.splice(car.begin(), WRCAR);
-		}
-		if( ewns[NORTH] >= 0 ) // move recieved cars into car..
-		{
-			list<class CAR>::iterator itr;
-			for(itr = NRCAR.begin(); itr != NRCAR.end(); ++itr)
+			if( ewns[NORTH] >= 0 ) // move recieved cars into car..
 			{
-				if (itr->DRCT()%2 == 0)	spot[ XYtoKEY( itr->X(), itr->Y() ) ].rt = 1;
-				else					spot[ XYtoKEY( itr->X(), itr->Y() ) ].lt = 1;
+				list<class CAR>::iterator itr;
+				for(itr = NRCAR.begin(); itr != NRCAR.end(); ++itr)
+				{
+					if (itr->DRCT()%2 == 0)	spot[ XYtoKEY( itr->X(), itr->Y() ) ].rt = 1;
+					else					spot[ XYtoKEY( itr->X(), itr->Y() ) ].lt = 1;
+				}
+				car.splice(car.begin(), NRCAR);
 			}
-			car.splice(car.begin(), NRCAR);
-		}
-		if( ewns[SOUTH] >= 0 ) // move recieved cars into car..
-		{
-			list<class CAR>::iterator itr;
-			for(itr = SRCAR.begin(); itr != SRCAR.end(); ++itr)
+			if( ewns[SOUTH] >= 0 ) // move recieved cars into car..
 			{
-				if (itr->DRCT()%2 == 0)	spot[ XYtoKEY( itr->X(), itr->Y() ) ].rt = 1;
-				else					spot[ XYtoKEY( itr->X(), itr->Y() ) ].lt = 1;
+				list<class CAR>::iterator itr;
+				for(itr = SRCAR.begin(); itr != SRCAR.end(); ++itr)
+				{
+					if (itr->DRCT()%2 == 0)	spot[ XYtoKEY( itr->X(), itr->Y() ) ].rt = 1;
+					else					spot[ XYtoKEY( itr->X(), itr->Y() ) ].lt = 1;
+				}
+				car.splice(car.begin(), SRCAR);
 			}
-			car.splice(car.begin(), SRCAR);
-		}
 		//car exchange part..
+		}	
 		
 		if(myid == 0) 
 		{
