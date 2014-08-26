@@ -126,35 +126,22 @@ int main(int argc, char *argv[])
 	bound.Construct(spot, cross, ewns); // construct the map in this process..
 	// map constructing part finish here..
 
-	// car insert part..
-	if(myid == -1)
-	{
-		cout<<"This is test of p 0"<<endl;
-		string PATH = "srrssllssss";
-		CAR newcar(48, 160, EAST, PATH);
-		car.push_back(newcar);
-		
-		CAR newcar1(46, 160, EAST, PATH);
-		car.push_back(newcar1);
-		
-		spotitr = spot.find( XYtoKEY( 48, 160 ));
-		if ( spotitr != spot.end() )	spotitr->second.rt = 1;
-		else 							cout<<"wrong!!"<<endl<<endl;
-	}
-
-	srand48(time(NULL) + pow(myid, 5) );
 	// constructing the cars in this process..
-	car_num = car_num/nps;
+	srand48(time(NULL) + pow(myid, 5) ); // make each process have a unique seed..
+	car_num = car_num/nps;				// each process do have same number of vehicles..
 	Add_Car(bound, car, ewnum, nsnum, car_num, spot); 
-	//if(myid == 0 ) Add_Car(bound, car, ewnum, nsnum, car_num, spot); 
 	world.barrier();
 	// car insert part..
-	
 
-	int time_i = 0, time_max = 2;
+	if(myid == 0) 
+	{	
+		cout<<endl<<"Each process simulate:"<<endl;
+		cout<<car.size()<<" vehicles "<<sizeof(car)*car.size()<<"KB"<<endl;
+		cout<<spot.size()<<" spots "<<sizeof(spot)*spot.size()<<"KB"<<endl<<endl;
+		cout<<"simulation start!"<<endl;
+	}
+	int time_i = 0, time_max = 5;
 	time_t start = time(NULL);
-
-	if(myid == 0) cout<<"simulation start!"<<endl;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		world.barrier();
@@ -223,8 +210,9 @@ int main(int argc, char *argv[])
 		}
 		//map exchange part..
 		
+		// traverse of cars..
 		list<class CAR> ESCAR, WSCAR, NSCAR, SSCAR; // list of cars sending to e w n s..
-		for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
+		for(caritr = car.begin(); caritr!=car.end(); ++caritr) 
 		{
 			char turn = caritr->path[0];
 			int newx(0), newy(0), newdrct(0);
@@ -273,6 +261,7 @@ int main(int argc, char *argv[])
 				else					   spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].lt = 0;
 			}
 		}
+		// traverse of cars..
 		
 		car.remove_if( check_del() );
 		world.barrier();
@@ -345,8 +334,11 @@ int main(int argc, char *argv[])
 		}
 		//car exchange part..
 		
-		time_t end = time(NULL);
-		if(myid == 0) cout<<end-start<<" seconds spent for this step"<<endl<<endl;
+		if(myid == 0) 
+		{
+			time_t end = time(NULL);
+			cout<<end-start<<" seconds spent for this step"<<endl<<endl;
+		}
 		time_i++;
 	}
 
