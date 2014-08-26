@@ -310,7 +310,8 @@ class BOUND
 	//			cout<<x<<" "<<y<<endl;//session 3..;
 
 				CROSS crs;
-				crs.NSred = 1;
+				crs.NSred = 0; // periodic test!!!!!!!!!!!!!
+				//crs.NSred = 1;
 				crs.EWred = 0;
 			    cross.insert( pair<int, CROSS> (XYtoKEY(x, y), crs) );
 			}

@@ -12,18 +12,14 @@ int main(int argc, char *argv[])
 	list<class CAR> car;
 	list<class CAR>:: iterator caritr;
 
-	int ewnum = 4, nsnum = 4;
-	int *ewrange = new int[4];
-	int *nsrange = new int[4];
+	int ewnum = 2, nsnum = 2;
+	int *ewrange = new int[2];
+	int *nsrange = new int[2];
 	ewrange[0] = 20;
-	ewrange[1] = 40;
-	ewrange[2] = 60;
-	ewrange[3] = 80;
+	ewrange[1] = 80;
 		
 	nsrange[0] = 20;
-	nsrange[1] = 40;
-	nsrange[2] = 60;
-	nsrange[3] = 80;
+	nsrange[1] = 80;
 	int Bet = 100, Bwt = 0, Bnt = 100, Bst = 0;
 	
 	BOUND bound(Bet, Bwt, Bnt, Bst, ewnum, nsnum, ewrange, nsrange);
@@ -34,15 +30,15 @@ int main(int argc, char *argv[])
 	//if(myid == 0)
 	{
 		cout<<"This is test of p 0"<<endl;
-		string PATH = "srssssss";
-		CAR newcar(48, 60, EAST, PATH);
+		string PATH;
+		PATH.assign(500, 'r');
+		CAR newcar(30, 20, WEST, PATH);
 		car.push_back(newcar);
 		
-		string PATH1 = "ssrssssss";
-		CAR newcar1(30, 60, EAST, PATH1);
+		CAR newcar1(70, 80, EAST, PATH);
 		car.push_back(newcar1);
 		
-		spotitr = spot.find( XYtoKEY( 48, 60 ));
+		spotitr = spot.find( XYtoKEY( 70, 80 ));
 		if ( spotitr != spot.end() )	spotitr->second.rt = 1;
 		else 							cout<<"wrong!!"<<endl<<endl;
 	}
@@ -50,18 +46,18 @@ int main(int argc, char *argv[])
 	srand48(time(NULL));
 	cout<<"simulation start!"<<endl;
 
-	int time_i = 0, time_max = 25;
+	int time_i = 0, time_max = 400;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		//if (myid == 0)	cout<<"At time "<<time_i<<" "<<endl;
-	if ( time_i%10 == 0 ) Signal_Switch(cross);
+		//if ( time_i%10 == 0 ) Signal_Switch(cross);
 	for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
 	{
 		char turn = caritr->path[0];
+		//char turn = 'r'; 
 		int newx(0), newy(0), newdrct(0);
 		bool rand = 1; // deal with the randomization..
 		if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
-
 		
 		caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
 		caritr->Move(newx, newy, newdrct, spot);
@@ -88,7 +84,8 @@ int main(int argc, char *argv[])
 	
 	for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
 	{
-		cout<<"time "<<time_i<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->path<<endl;
+		//cout<<"time "<<time_i<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->path<<endl;
+		cout<<"time "<<time_i<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<endl;
 	}
 	cout<<endl;
 	time_i++;

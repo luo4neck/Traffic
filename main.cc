@@ -24,46 +24,38 @@ int main(int argc, char *argv[])
 
 	if( myid == 0 )
 	{
-		ewnum = 2, nsnum = 2;
-		ewrange = new int[2];
-		nsrange = new int[2];
+		ewnum = 1, nsnum = 1;
+		ewrange = new int[1];
+		nsrange = new int[1];
 		ewrange[0] = 20;
-		ewrange[1] = 40;
-		nsrange[0] = 60;
-		nsrange[1] = 80;
+		nsrange[0] = 80;
 		Bet = 50, Bwt = 0, Bnt = 100, Bst = 51;
 	}
 	if( myid == 1 )
 	{
-		ewnum = 2, nsnum = 2;
-		ewrange = new int[2];
-		nsrange = new int[2];
-		ewrange[0] = 60;
-		ewrange[1] = 80;
-		nsrange[0] = 60;
-		nsrange[1] = 80;
+		ewnum = 1, nsnum = 1;
+		ewrange = new int[1];
+		nsrange = new int[1];
+		ewrange[0] = 80;
+		nsrange[0] = 80;
 		Bet = 100, Bwt = 51, Bnt = 100, Bst = 51;
 	}
 	if( myid == 2 )
 	{
-		ewnum = 2, nsnum = 2;
-		ewrange = new int[2];
-		nsrange = new int[2];
+		ewnum = 1, nsnum = 1;
+		ewrange = new int[1];
+		nsrange = new int[1];
 		ewrange[0] = 20;
-		ewrange[1] = 40;
 		nsrange[0] = 20;
-		nsrange[1] = 40;
 		Bet = 50, Bwt = 0, Bnt = 50, Bst = 0;
 	}
 	if( myid == 3 )
 	{
-		ewnum = 2, nsnum = 2;
-		ewrange = new int[2];
-		nsrange = new int[2];
-		ewrange[0] = 60;
-		ewrange[1] = 80;
+		ewnum = 1, nsnum = 1;
+		ewrange = new int[1];
+		nsrange = new int[1];
+		ewrange[0] = 80;
 		nsrange[0] = 20;
-		nsrange[1] = 40;
 		Bet = 100, Bwt = 51, Bnt = 50, Bst = 0;
 	}
 	
@@ -76,20 +68,21 @@ int main(int argc, char *argv[])
 	
 	bound.Construct(spot, cross, ewns); // construct the map in this process..
 	
-	if(myid == 0)
+	if(myid == 1)
 	{
-		cout<<"This is test of p 0"<<endl;
-		string PATH = "srssssss";
-		CAR newcar(48, 60, EAST, PATH);
+		cout<<"This is test of p 1"<<endl;
+		string PATH;
+		PATH.assign(500, 'r');
+		CAR newcar(70, 80, EAST, PATH);
 		car.push_back(newcar);
-		
-		string PATH1 = "ssrssssss";
-		CAR newcar1(30, 60, EAST, PATH1);
+	}
+	if(myid == 2)
+	{
+		cout<<"This is test of p 2"<<endl;
+		string PATH;
+		PATH.assign(500, 'r');
+		CAR newcar1(30, 20, WEST, PATH);
 		car.push_back(newcar1);
-		
-		spotitr = spot.find( XYtoKEY( 48, 60 ));
-		if ( spotitr != spot.end() )	spotitr->second.rt = 1;
-		else 							cout<<"wrong!!"<<endl<<endl;
 	}
 
 	srand48(time(NULL));
@@ -101,7 +94,7 @@ int main(int argc, char *argv[])
 	{
 		world.barrier();
 		//if (myid == 0)	cout<<"At time "<<time_i<<" "<<endl;
-		if ( time_i%10 == 0 ) Signal_Switch(cross);
+		//if ( time_i%10 == 0 ) Signal_Switch(cross);
 		
 		//map exchange part.. 
 		boost::mpi::request req[8];
@@ -204,12 +197,10 @@ int main(int argc, char *argv[])
 			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 		}
 		
-		//if(time_i == 31 && myid == 3 ) cout<<"rt: "<<spot[ XYtoKEY(50, 40) ].rt<<",lt: "<<spot[XYtoKEY(50, 40) ].lt<<endl;
-		//if(time_i == 32 && myid == 3 ) cout<<"rt: "<<spot[ XYtoKEY(50, 40) ].rt<<",lt: "<<spot[XYtoKEY(50, 40) ].lt<<endl;
-
 		for(caritr = car.begin(); caritr != car.end(); ++caritr)
 		{
-			cout<<"time: "<<time_i<<" in proc "<<myid<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<" "<<caritr->path<<endl;
+			cout<<"time: "<<time_i<<" in proc "<<myid<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<" "<<endl;
+			//cout<<"time: "<<time_i<<" in proc "<<myid<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<" "<<caritr->path<<endl;
 			if (caritr->del == 1)
 			{
 				if(caritr->DRCT()%2 == 0 ) spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].rt = 0;
@@ -221,7 +212,7 @@ int main(int argc, char *argv[])
 		car.remove_if( check_del() );
 		if(myid == 0 ) cout<<endl;
 		world.barrier();
-		sleep(1);
+		//sleep(1);
 		
 		//car exchange part..
 		list<class CAR> ERCAR, WRCAR, NRCAR, SRCAR; // list of cars recved from e w n s..
