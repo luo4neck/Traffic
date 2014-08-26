@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 		cout<<cross.size()<<" crosses "<<sizeof(cross)*cross.size()/1024<<"KB"<<endl<<endl;
 		cout<<"simulation start!"<<endl;
 	}
-	int time_i = 0, time_max = 5;
+	int time_i = 0, time_max = 100, den = 0, flow = 0;
 	time_t start = time(NULL);
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
@@ -234,6 +234,7 @@ int main(int argc, char *argv[])
 		//map exchange part..
 		
 		// traverse of cars..
+		bool flow_check = 0;
 		list<class CAR> ESCAR, WSCAR, NSCAR, SSCAR; // list of cars sending to e w n s..
 		for(caritr = car.begin(); caritr!=car.end(); ++caritr) 
 		{
@@ -246,6 +247,14 @@ int main(int argc, char *argv[])
 			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
+			
+			{
+				if ( caritr->Y() == 40 )
+				{
+					if( (caritr->X() <= 30 && newx >= 31 ) || (caritr->X() >= 31 && newx <= 30 ) )	flow_check = 1;
+				}
+			}
+			
 			caritr->Move(newx, newy, newdrct, spot);
 		
 			if(nps != 1)
@@ -277,12 +286,14 @@ int main(int argc, char *argv[])
 			}
 			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 		}
-
+		
+		int del_count = 0;
 		for(caritr = car.begin(); caritr != car.end(); ++caritr)
 		{
 		//	cout<<"time: "<<time_i<<" in proc "<<myid<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<" "<<caritr->path<<endl<<endl;
 			if (caritr->del == 1)
 			{
+				del_count++;
 				if(caritr->DRCT()%2 == 0 ) spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].rt = 0;
 				else					   spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].lt = 0;
 			}
@@ -365,6 +376,11 @@ int main(int argc, char *argv[])
 		//car exchange part..
 		}	
 		
+		Add_Car(bound, car, ewnum, nsnum, del_count, spot); // the number of deleted vehicle are added into the map..
+		cout<<"deleted:"<<del_count<<", car no"<<car.size()<<endl;
+		
+		if(flow_check) flow++;
+		
 		if(myid == 0) 
 		{
 			time_t end = time(NULL);
@@ -372,6 +388,10 @@ int main(int argc, char *argv[])
 		}
 		time_i++;
 	}
-
+	
+	{// this scope is for flow test..
+		double flow_p = (double)flow / (double)time_max;
+		cout<<flow_p<<endl;
+	}
 	return 0;
 }

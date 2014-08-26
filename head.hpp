@@ -510,7 +510,7 @@ void Add_Car(const BOUND &bound, list<class CAR> &car, const int ew, const int n
 		}
 	}
 
-	for(int i=0; i<car_num/2; ++i)  // cars on n-s direction road..
+	for(int i = car_num/2; i<car_num; ++i)  // cars on n-s direction road..
 	{
 		bool check = 1;
 		while(check)
