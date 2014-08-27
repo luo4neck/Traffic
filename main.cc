@@ -249,9 +249,10 @@ int main(int argc, char *argv[])
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
 			
 			{// flow test..
-				if ( caritr->Y() == 20 )
+				if ( caritr->Y() == 40 )
 				{
-					if( (caritr->X() <= 30 && newx >= 31 ) || (caritr->X() >= 31 && newx <= 30 ) )	flow_check = 1;
+					//if( (caritr->X() < 30 && newx > 31 ) || (caritr->X() > 31 && newx < 30 ) )	flow_check = 1;
+					if ( caritr->X() < 30 && newx > 31 )	flow_check = 1;
 				}
 			}
 			
@@ -379,10 +380,8 @@ int main(int argc, char *argv[])
 		
 		{// density test..
 			spotitr = spot.find( XYtoKEY( 30, 40 ) );
-			if (spotitr != spot.end() && (spotitr->second.rt == 1 || spotitr->second.lt == 1) )
-			{
-				den++;
-			}
+			if (spotitr != spot.end() && spotitr->second.rt == 1 )	den++;
+			//if (spotitr != spot.end() && (spotitr->second.rt == 1 || spotitr->second.lt == 1) )	den++;
 		}
 		
 		if(flow_check) flow++;
