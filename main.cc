@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 		cout<<cross.size()<<" crosses "<<sizeof(cross)*cross.size()/1024<<"KB"<<endl<<endl;
 		cout<<"simulation start!"<<endl;
 	}
-	int time_i = 0, time_max = 500, den = 0, flow = 0;
+	int time_i = 0, time_max = 500; 
 	time_t start = time(NULL);
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
@@ -234,7 +234,6 @@ int main(int argc, char *argv[])
 		//map exchange part..
 		
 		// traverse of cars..
-		bool flow_check = 0;
 		list<class CAR> ESCAR, WSCAR, NSCAR, SSCAR; // list of cars sending to e w n s..
 		for(caritr = car.begin(); caritr!=car.end(); ++caritr) 
 		{
@@ -247,13 +246,6 @@ int main(int argc, char *argv[])
 			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
-			
-			{// flow test..
-				if ( caritr->Y() == 20 )
-				{
-					if( (caritr->X() <= 30 && newx >= 31 ) || (caritr->X() >= 31 && newx <= 30 ) )	flow_check = 1;
-				}
-			}
 			
 			caritr->Move(newx, newy, newdrct, spot);
 		
@@ -377,16 +369,6 @@ int main(int argc, char *argv[])
 		if( (int)car.size() < car_num )	Add_Car(bound, car, ewnum, nsnum, car_num-car.size(), spot); 
 		// the number of deleted vehicle are added into the map..
 		
-		{// density test..
-			spotitr = spot.find( XYtoKEY( 30, 40 ) );
-			if (spotitr != spot.end() && (spotitr->second.rt == 1 || spotitr->second.lt == 1) )
-			{
-				den++;
-			}
-		}
-		
-		if(flow_check) flow++;
-			
 		if(myid == 0) 
 		{
 			time_t end = time(NULL);
@@ -395,10 +377,5 @@ int main(int argc, char *argv[])
 		time_i++;
 	}
 	
-	{// this scope is for flow test..
-		double flow_p = (double)flow / (double)time_max;
-		double den_p = (double)den / (double)time_max;
-		cout<<"flow: "<<flow_p<<", density: "<<den_p<<endl;
-	}
 	return 0;
 }
