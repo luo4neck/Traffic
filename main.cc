@@ -1,7 +1,7 @@
 #include "head.hpp"
 using namespace std;
 
-const double p_randomization= 0.0;
+const double p_randomization= 0.01;
 
 int main(int argc, char *argv[])
 {
@@ -15,8 +15,7 @@ int main(int argc, char *argv[])
 	boost::mpi::environment env(argc, argv);
 	boost::mpi::communicator world;
 	const int myid( world.rank() );
-	const int nps( world.size() );
-	//int car_num;
+	//const int nps( world.size() );
 
 	int ewns[4]; // to recv 4 boundary info, one array two usage..
 	int ewnum, nsnum, *ewrange, *nsrange;
@@ -29,16 +28,16 @@ int main(int argc, char *argv[])
 		nsrange = new int[1];
 		ewrange[0] = 20;
 		nsrange[0] = 80;
-		Bet = 50, Bwt = 0, Bnt = 100, Bst = 51;
+		Bet = 100, Bwt = 0, Bnt = 100, Bst = 51;
 	}
 	if( myid == 1 )
 	{
 		ewnum = 1, nsnum = 1;
 		ewrange = new int[1];
 		nsrange = new int[1];
-		ewrange[0] = 80;
+		ewrange[0] = 180;
 		nsrange[0] = 80;
-		Bet = 100, Bwt = 51, Bnt = 100, Bst = 51;
+		Bet = 200, Bwt = 101, Bnt = 100, Bst = 51;
 	}
 	if( myid == 2 )
 	{
@@ -47,16 +46,16 @@ int main(int argc, char *argv[])
 		nsrange = new int[1];
 		ewrange[0] = 20;
 		nsrange[0] = 20;
-		Bet = 50, Bwt = 0, Bnt = 50, Bst = 0;
+		Bet = 100, Bwt = 0, Bnt = 50, Bst = 0;
 	}
 	if( myid == 3 )
 	{
 		ewnum = 1, nsnum = 1;
 		ewrange = new int[1];
 		nsrange = new int[1];
-		ewrange[0] = 80;
+		ewrange[0] = 180;
 		nsrange[0] = 20;
-		Bet = 100, Bwt = 51, Bnt = 50, Bst = 0;
+		Bet = 200, Bwt = 101, Bnt = 50, Bst = 0;
 	}
 	
 	BOUND bound(Bet, Bwt, Bnt, Bst, ewnum, nsnum, ewrange, nsrange);
@@ -72,24 +71,31 @@ int main(int argc, char *argv[])
 	{
 		cout<<"This is test of p 1"<<endl;
 		string PATH;
-		PATH.assign(500, 'r');
-		CAR newcar(70, 80, EAST, PATH);
-		car.push_back(newcar);
+		PATH.assign(500, 's');
+		int base = 130;
+		for(int i=0; i<15; ++i)
+		{
+			CAR newcar(base + i, 80, EAST, PATH);
+			car.push_back(newcar);
+			spot[XYtoKEY( base + i, 80 )].rt = 1;
+		}
 	}
+	/*
 	if(myid == 2)
 	{
 		cout<<"This is test of p 2"<<endl;
 		string PATH;
-		PATH.assign(500, 'r');
+		PATH.assign(500, 's');
 		CAR newcar1(30, 20, WEST, PATH);
 		car.push_back(newcar1);
 	}
-
+*/
 	srand48(time(NULL));
 	
 	if(myid == 0) cout<<"simulation start!"<<endl;
-
-	int time_i = 0, time_max = 25;
+	
+	ofstream file("plot.dat");
+	int time_i = 0, time_max = 35;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		world.barrier();
@@ -110,8 +116,8 @@ int main(int argc, char *argv[])
 		{
 			map<int, LR> WS; // west direction send..
 			bound.Wpackout(WS, spot);
-			req[2] = world.isend( ewns[WEST], myid+100, WS); // process id+10 of sender is the tag..
-			req[3] = world.irecv( ewns[WEST], ewns[WEST]+100, RW);
+			req[2] = world.isend( ewns[WEST], myid+100, WS); // process id+10 of sender is the tag..  
+			req[3] = world.irecv( ewns[WEST], ewns[WEST]+100, RW); 
 		}
 		if( ewns[NORTH] >= 0 )
 		{
@@ -168,6 +174,11 @@ int main(int argc, char *argv[])
 			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
+			
+			{
+				if( caritr->Y() == 80 && newx > 150 ) newx = 90;
+			}
+			
 			caritr->Move(newx, newy, newdrct, spot);
 			
 			if( caritr->X() > bound.Et() ) // if come out of range.. set del to 1, add to send list..
@@ -197,17 +208,47 @@ int main(int argc, char *argv[])
 			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 		}
 		
+		if (myid == 0 && time_i > 10 )
+		{
+			vector<int> p0car;
+			for(caritr = car.begin(); caritr != car.end(); ++caritr)
+			{
+				p0car.push_back( caritr->X() );
+			}
+			
+			world.send(1, 909, p0car);
+		}
+
+		if ( myid == 1 && time_i > 10 ) file<<time_i<<" ";
+		cout<<"time "<<time_i<<": ";
 		for(caritr = car.begin(); caritr != car.end(); ++caritr)
 		{
-			cout<<"time: "<<time_i<<" in proc "<<myid<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<" "<<endl;
+			//cout<<"time: "<<time_i<<" in proc "<<myid<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<" "<<endl;
 			//cout<<"time: "<<time_i<<" in proc "<<myid<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<" "<<caritr->path<<endl;
+			if( myid == 1 && time_i > 10 )
+			{
+				file<<caritr->X()<<" ";
+			}
+
+			cout<<caritr->X()<<", ";
 			if (caritr->del == 1)
 			{
 				if(caritr->DRCT()%2 == 0 ) spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].rt = 0;
 				else					   spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].lt = 0;
 			}
 		}
-		if(time_i == 31 && myid == 3 ) cout<<"rt: "<<spot[ XYtoKEY(50, 40) ].rt<<",lt: "<<spot[XYtoKEY(50, 40) ].lt<<endl;
+		if ( myid == 1 && time_i > 10 ) 
+		{
+			vector<int> prcv;
+			vector<int>:: iterator itr;
+			world.recv(0, 909, prcv);
+			for( itr = prcv.begin(); itr != prcv.end(); ++itr )
+			{
+				file<<*itr<<" ";
+			}
+			file<<endl;
+		}
+		cout<<endl;
 
 		car.remove_if( check_del() );
 		if(myid == 0 ) cout<<endl;
@@ -283,6 +324,25 @@ int main(int argc, char *argv[])
 		//car exchange part..
 
 		time_i++;
+	}
+	
+	file.close();
+	if( myid == 1 )
+	{// gnuplot part..
+		FILE *gp = popen("gnuplot -persist", "w");;
+		if(gp == NULL)
+		{
+			printf("Cannot plot the data!\n");
+			exit(0);
+		}
+		fprintf(gp, "set key left top\n");// this line is just for proposal show..
+		fprintf(gp, "set title 'Parallel Periodic Test'\n");// this line is just for proposal show..
+		fprintf(gp, "set xrange[6:35]\n");
+		fprintf(gp, "set xlabel 'Time / Second'\n");
+		fprintf(gp, "set ylabel 'Location on the Road'\n");
+		fprintf(gp, "plot 'plot.dat' u 1:2 w points title 'car 0', 'plot.dat' u 1:3 w points title 'car 1', 'plot.dat' u 1:4 w points title 'car 2', 'plot.dat' u 1:5 w points title 'car 3', 'plot.dat' u 1:6 w points title 'car 4', 'plot.dat' u 1:7 w points title 'car 5', 'plot.dat' u 1:8 w points title 'car 6', 'plot.dat' u 1:9 w points title 'car 7', 'plot.dat' u 1:10 w points title 'car 8', 'plot.dat' u 1:11 w points title 'car 9', 'plot.dat' u 1:12 w points title 'car 10', 'plot.dat' u 1:13 w points title 'car 11', 'plot.dat' u 1:14 w points title 'car 12', 'plot.dat' u 1:15 w points title 'car 13', 'plot.dat' u 1:16 w points title 'car 14'\n");
+		//fprintf(gp, "pause -1\n");
+		fclose(gp);
 	}
 
 	return 0;

@@ -7,8 +7,8 @@ main.o: main.cc head.hpp def.hpp main_s.cc head_s.hpp def_s.hpp
 	mpic++ -c main.cc -Wall -o main.o -lboost_mpi
 
 test: all 
-	mpirun -n 4 ./main
 	./main_s
+	mpirun -n 4 ./main
 
 clean:
-	rm *.o main main_s
+	rm *.o plot.dat plot_s.dat main main_s
