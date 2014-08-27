@@ -148,11 +148,110 @@ int main(int argc, char *argv[])
 	// constructing the cars in this process..
 	srand48(time(NULL) + pow(myid, 5) ); // make each process have a unique seed..
 	car_num = car_num/nps;				// each process do have same number of vehicles..
-	Add_Car(bound, car, ewnum, nsnum, car_num, spot); 
+	
+	//Add_Car(bound, car, ewnum, nsnum, car_num, spot); 
+
+	if(nps == 1)
+	{
+			string PATH;
+			PATH.assign(500, 'r');
+			int base = 11;
+			for( int i=0; i<car_num/4; ++i )
+			{
+				CAR newcar( base + i, 90, EAST, PATH);
+				car.push_back(newcar);
+				spot[ XYtoKEY( base + i, 90) ].rt = 1;
+			}
+			for( int i=0; i<car_num/4; ++i )
+			{
+				CAR newcar( base + i, 10, WEST, PATH);
+				car.push_back(newcar);
+				spot[ XYtoKEY( base + i, 10) ].lt = 1;
+			}
+			for( int i=0; i<car_num/4; ++i)
+			{
+				CAR newcar( 10, base + i, NORTH, PATH );
+				car.push_back(newcar);
+				spot[ XYtoKEY( 10, base + i) ].rt = 1;
+			}
+			for( int i=0; i<car_num/4; ++i)
+			{
+				CAR newcar( 90, base + i, SOUTH, PATH );
+				car.push_back(newcar);
+				spot[ XYtoKEY( 90, base + i) ].lt = 1;
+			}
+	}
+	else  // nps = 4;
+	{
+		string PATH;
+		PATH.assign(500, 'r');
+		int base = 11;
+		if(myid == 0)
+		{
+			for(int i=0; i<car_num/2; ++i)  // x 
+			{
+				CAR newcar( base + i, 90, EAST, PATH);
+				car.push_back(newcar);
+				spot[ XYtoKEY( base + i, 90 ) ].rt = 1;
+			}
+			for(int i=0; i<car_num/2; ++i)  // y 
+			{
+				CAR newcar( 10, 51+i, NORTH, PATH);
+				car.push_back(newcar);
+				spot[ XYtoKEY( 10, 51+i ) ].rt = 1;
+			}
+		}
+		else if(myid == 1)
+		{
+			for(int i=0; i<car_num/2; ++i)  // x 
+			{
+				CAR newcar( 51 + i, 90, EAST, PATH);
+				car.push_back(newcar);
+				spot[ XYtoKEY( 51+i, 90 ) ].rt = 1;
+			}
+			for(int i=0; i<car_num/2; ++i)  // y 
+			{
+				CAR newcar( 90, 51+i, SOUTH, PATH);
+				car.push_back(newcar);
+				spot[ XYtoKEY( 90, 51+i ) ].lt = 1;
+			}
+		}
+		else if(myid == 2)
+		{
+			for(int i=0; i<car_num/2; ++i)  // y 
+			{
+				CAR newcar( 10, base+i, NORTH, PATH);
+				car.push_back(newcar);
+				spot[ XYtoKEY( 10, base+i ) ].rt = 1;
+			}
+			for(int i=0; i<car_num/2; ++i)  // x 
+			{
+				CAR newcar( base + i, 10, WEST, PATH);
+				car.push_back(newcar);
+				spot[ XYtoKEY( base + i, 10 ) ].lt = 1;
+			}
+		}
+		else //if(myid == 3)
+		{
+			for(int i=0; i<car_num/2; ++i)  // x 
+			{
+				CAR newcar( 51 + i, 10, WEST, PATH);
+				car.push_back(newcar);
+				spot[ XYtoKEY( 51 + i, 10 ) ].lt = 1;
+			}
+			for(int i=0; i<car_num/2; ++i)  // y 
+			{
+				CAR newcar( 90, base+i, SOUTH, PATH);
+				car.push_back(newcar);
+				spot[ XYtoKEY( 90, base+i ) ].lt = 1;
+			}
+		}
+	}
+	
 	world.barrier();
 	// car insert part..
 
-	if(myid == 0) 
+	if(myid == 0)
 	{	
 		cout<<endl<<"Each process simulate:"<<endl;
 		cout<<car.size()<<" vehicles "<<sizeof(car)*car.size()/1024<<"KB"<<endl;
@@ -164,7 +263,8 @@ int main(int argc, char *argv[])
 	time_t start = time(NULL);
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
-		if ( time_i%10 == 0 ) Signal_Switch(cross);
+		//if ( time_i%20 == 0 ) Signal_Switch(cross);
+		//cross initialize function in head.hpp is also changed..
 		if (myid == 0)	cout<<"At time "<<time_i<<" "<<endl;
 		
 		if( nps != 1 )
@@ -249,10 +349,9 @@ int main(int argc, char *argv[])
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
 			
 			{// flow test..
-				if ( caritr->Y() == 40 )
+				if ( caritr->Y() == 90 )
 				{
-					//if( (caritr->X() < 30 && newx > 31 ) || (caritr->X() > 31 && newx < 30 ) )	flow_check = 1;
-					if ( caritr->X() < 30 && newx > 31 )	flow_check = 1;
+					if ( caritr->X() < 35 && newx > 36 )	flow_check = 1;
 				}
 			}
 			
@@ -290,7 +389,6 @@ int main(int argc, char *argv[])
 		
 		for(caritr = car.begin(); caritr != car.end(); ++caritr)
 		{
-		//	cout<<"time: "<<time_i<<" in proc "<<myid<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<" "<<caritr->path<<endl<<endl;
 			if (caritr->del == 1)
 			{
 				if(caritr->DRCT()%2 == 0 ) spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].rt = 0;
@@ -330,7 +428,7 @@ int main(int argc, char *argv[])
 			}
 		
 			boost::mpi::wait_all(req, req+8);	//waitall
-		//if(myid == 2) cout<<"time: "<<time_i<<" "<<ERCAR.size()<<" "<<WRCAR.size()<<" "<<NRCAR.size()<<" "<<SRCAR.size()<<endl;
+		if(myid == 3) cout<<"time: "<<time_i<<" "<<ERCAR.size()<<" "<<WRCAR.size()<<" "<<NRCAR.size()<<" "<<SRCAR.size()<<endl;
 		
 			if( ewns[EAST]  >= 0 ) // move recieved cars into car..
 			{	
@@ -375,13 +473,12 @@ int main(int argc, char *argv[])
 		//car exchange part..
 		}	
 	
-		if( (int)car.size() < car_num )	Add_Car(bound, car, ewnum, nsnum, car_num-car.size(), spot); 
+		//if( (int)car.size() < car_num )	Add_Car(bound, car, ewnum, nsnum, car_num-car.size(), spot); 
 		// the number of deleted vehicle are added into the map..
 		
 		{// density test..
-			spotitr = spot.find( XYtoKEY( 30, 40 ) );
+			spotitr = spot.find( XYtoKEY( 35, 90 ) );
 			if (spotitr != spot.end() && spotitr->second.rt == 1 )	den++;
-			//if (spotitr != spot.end() && (spotitr->second.rt == 1 || spotitr->second.lt == 1) )	den++;
 		}
 		
 		if(flow_check) flow++;
@@ -393,11 +490,18 @@ int main(int argc, char *argv[])
 		}
 		time_i++;
 	}
-	
+
+	//if( myid == 0 && nps == 1 )
+	if( myid == 0 )
 	{// this scope is for flow test..
 		double flow_p = (double)flow / (double)time_max;
 		double den_p = (double)den / (double)time_max;
-		cout<<"flow: "<<flow_p<<", density: "<<den_p<<endl;
+		cout<<"flow: "<<flow_p<<", density: "<<den_p<<" "<<car.size()<<endl;
 	}
+	if( nps != 1 )
+	{
+		cout<<myid<<" "<<car.size()<<endl;
+	}
+
 	return 0;
 }

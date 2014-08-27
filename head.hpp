@@ -410,7 +410,8 @@ class BOUND
 				int y = NSpnt[j];
 				
 				CROSS crs;
-				crs.NSred = 1;
+				//crs.NSred = 1;
+				crs.NSred = 0;
 				crs.EWred = 0;
 			    cross.insert( pair<int, CROSS> (XYtoKEY(x, y), crs) );
 			}
