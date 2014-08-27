@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 		cout<<cross.size()<<" crosses "<<sizeof(cross)*cross.size()/1024<<"KB"<<endl<<endl;
 		cout<<"simulation start!"<<endl;
 	}
-	int time_i = 0, time_max = 500, den = 0, flow = 0;
+	int time_i = 0, time_max = 1000, den = 0, flow = 0;
 	time_t start = time(NULL);
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
