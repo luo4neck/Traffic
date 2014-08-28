@@ -303,7 +303,6 @@ int main(int argc, char *argv[])
 				req[6] = world.isend( ewns[SOUTH], myid+100, SS); // process id+10 of sender is the tag..
 				req[7] = world.irecv( ewns[SOUTH], ewns[SOUTH]+100, RS);
 			}
-		//cout<<"fine here"<<endl;
 		
 			boost::mpi::wait_all(req, req+8);	//waitall
 		
@@ -385,9 +384,7 @@ int main(int argc, char *argv[])
 					caritr->del = 1;
 				}
 			}
-			//if(myid == 3)cout<<" -> "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 		}
-		//if(myid==0) cout<<endl;
 
 		for(caritr = car.begin(); caritr != car.end(); ++caritr)
 		{
@@ -430,7 +427,6 @@ int main(int argc, char *argv[])
 			}
 		
 			boost::mpi::wait_all(req, req+8);	//waitall
-		//if(myid == 3) cout<<"time: "<<time_i<<" "<<ERCAR.size()<<" "<<WRCAR.size()<<" "<<NRCAR.size()<<" "<<SRCAR.size()<<endl;
 		
 			if( ewns[EAST]  >= 0 ) // move recieved cars into car..
 			{	
@@ -493,7 +489,6 @@ int main(int argc, char *argv[])
 		time_i++;
 	}
 
-	//if( myid == 0 && nps == 1 )
 	if( myid == 0 )
 	{// this scope is for flow test..
 		double flow_p = (double)flow / (double)time_max;
