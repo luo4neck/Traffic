@@ -144,6 +144,7 @@ int main(int argc, char *argv[])
 	}
 	bound.Construct(spot, cross, ewns); // construct the map in this process..
 	// map constructing part finish here..
+	
 
 	// constructing the cars in this process..
 	srand48(time(NULL) + pow(myid, 5) ); // make each process have a unique seed..
@@ -265,7 +266,7 @@ int main(int argc, char *argv[])
 	{
 		//if ( time_i%20 == 0 ) Signal_Switch(cross);
 		//cross initialize function in head.hpp is also changed..
-		if (myid == 0)	cout<<"At time "<<time_i<<" "<<endl;
+		//if (myid == 0)	cout<<"At time "<<time_i<<" "<<endl;
 		
 		if( nps != 1 )
 		{
@@ -344,7 +345,7 @@ int main(int argc, char *argv[])
 			if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
 			
 			//cout<<"rand "<<rand<<endl;
-			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
+			//if(myid == 3)cout<<"P: "<<myid<<" "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del;
 			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
 			
@@ -384,9 +385,10 @@ int main(int argc, char *argv[])
 					caritr->del = 1;
 				}
 			}
-			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
+			//if(myid == 3)cout<<" -> "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 		}
-		
+		//if(myid==0) cout<<endl;
+
 		for(caritr = car.begin(); caritr != car.end(); ++caritr)
 		{
 			if (caritr->del == 1)
@@ -428,7 +430,7 @@ int main(int argc, char *argv[])
 			}
 		
 			boost::mpi::wait_all(req, req+8);	//waitall
-		if(myid == 3) cout<<"time: "<<time_i<<" "<<ERCAR.size()<<" "<<WRCAR.size()<<" "<<NRCAR.size()<<" "<<SRCAR.size()<<endl;
+		//if(myid == 3) cout<<"time: "<<time_i<<" "<<ERCAR.size()<<" "<<WRCAR.size()<<" "<<NRCAR.size()<<" "<<SRCAR.size()<<endl;
 		
 			if( ewns[EAST]  >= 0 ) // move recieved cars into car..
 			{	
@@ -478,7 +480,7 @@ int main(int argc, char *argv[])
 		
 		{// density test..
 			spotitr = spot.find( XYtoKEY( 35, 90 ) );
-			if (spotitr != spot.end() && spotitr->second.rt == 1 )	den++;
+			if (spotitr != spot.end() && spotitr->second.rt == 1 ){	den++;	}
 		}
 		
 		if(flow_check) flow++;
@@ -486,7 +488,7 @@ int main(int argc, char *argv[])
 		if(myid == 0) 
 		{
 			time_t end = time(NULL);
-			cout<<end-start<<" seconds spent for this step"<<endl<<endl;
+		//	cout<<end-start<<" seconds spent for this step"<<endl<<endl;
 		}
 		time_i++;
 	}
