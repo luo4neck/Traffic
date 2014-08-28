@@ -340,7 +340,6 @@ class BOUND
 			for(int j = Etin(); j<= Et(); ++j)
 			{
 				int x = j;
-			//	cout<<x<<" "<<y<<endl;
 				ES[ XYtoKEY(x,y) ].rt = spot[ XYtoKEY(x,y) ].rt; 
 				ES[ XYtoKEY(x,y) ].lt = spot[ XYtoKEY(x,y) ].lt; 
 			}

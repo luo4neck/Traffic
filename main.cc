@@ -160,11 +160,13 @@ int main(int argc, char *argv[])
 		cout<<cross.size()<<" crosses "<<sizeof(cross)*cross.size()/1024<<"KB"<<endl<<endl;
 		cout<<"simulation start!"<<endl;
 	}
+	
 	int time_i = 0, time_max = 500; 
+	unsigned long int accu = 0;
 	time_t start = time(NULL);
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
-		if ( time_i%10 == 0 ) Signal_Switch(cross);
+		if ( time_i%20 == 0 ) Signal_Switch(cross);
 		if (myid == 0)	cout<<"At time "<<time_i<<" "<<endl;
 		
 		if( nps != 1 )
@@ -246,6 +248,8 @@ int main(int argc, char *argv[])
 			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
+			
+			accu = accu + abs(newx - caritr->X() ) + abs(newy - caritr->Y() ); // accumulate all movements..
 			
 			caritr->Move(newx, newy, newdrct, spot);
 		
@@ -375,6 +379,22 @@ int main(int argc, char *argv[])
 			cout<<end-start<<" seconds spent for this step"<<endl<<endl;
 		}
 		time_i++;
+	}// end of while time_i
+	
+	if(myid == 0)
+	{
+		for(int i=1; i<nps; ++i)
+		{
+			unsigned long int tmpA = 0;
+			world.recv(i, 314, tmpA);
+			accu = accu + tmpA;
+		}
+		double re = (double)accu/ (double)time_max/( (double)car_num * (double)nps );
+		cout<<"Average movement in this test is: "<<re<<endl;
+	}
+	else
+	{
+		world.send(0, 314, accu);
 	}
 	
 	return 0;
