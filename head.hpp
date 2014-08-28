@@ -355,7 +355,7 @@ class BOUND
 		for(int i=0; i<NSnum; ++i)
 		{
 			const int y = NSpnt[i];
-			for(int j = Wtin(); j<= Wt(); --j)
+			for(int j = Wtin(); j>= Wt(); --j)
 			{
 				int x = j;
 				WS[ XYtoKEY(x,y) ].rt = spot[ XYtoKEY(x,y) ].rt; 
@@ -371,10 +371,10 @@ class BOUND
 	{
 		for(int i=0; i<EWnum; ++i)
 		{
-			const int y = EWpnt[i];
+			const int x = EWpnt[i];
 			for(int j = Ntin(); j<= Nt(); ++j)
 			{
-				int x = j;
+				int y = j;
 				NS[ XYtoKEY(x,y) ].rt = spot[ XYtoKEY(x,y) ].rt; 
 				NS[ XYtoKEY(x,y) ].lt = spot[ XYtoKEY(x,y) ].lt; 
 			}
@@ -388,10 +388,10 @@ class BOUND
 	{
 		for(int i=0; i<NSnum; ++i)
 		{
-			const int y = NSpnt[i];
-			for(int j = Stin(); j<= St(); --j)
+			const int x = EWpnt[i];
+			for(int j = Stin(); j>= St(); --j)
 			{
-				int x = j;
+				int y = j;
 				SS[ XYtoKEY(x,y) ].rt = spot[ XYtoKEY(x,y) ].rt; 
 				SS[ XYtoKEY(x,y) ].lt = spot[ XYtoKEY(x,y) ].lt; 
 			}
@@ -439,7 +439,6 @@ class BOUND
 					space.rt = 0;
 					spot.insert(pair<int, LR> ( XYtoKEY(x, y) , space));
 				}
-	//			cout<<x<<" "<<y<<endl;//session 3..;
 			}
 		}
 		
