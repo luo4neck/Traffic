@@ -162,11 +162,12 @@ int main(int argc, char *argv[])
 	}
 	
 	int time_i = 0, time_max = 500; 
-	unsigned long int accu = 0;
+	long int accu = 0;
 	time_t start = time(NULL);
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
-		if ( time_i%20 == 0 ) Signal_Switch(cross);
+		world.barrier();
+		if ( time_i%30 == 0 ) Signal_Switch(cross);
 		if (myid == 0)	cout<<"At time "<<time_i<<" "<<endl;
 		
 		if( nps != 1 )
@@ -232,6 +233,8 @@ int main(int argc, char *argv[])
 				for(itr = RS.begin(); itr != RS.end(); ++itr)
 				{ spot[itr->first].lt = itr->second.lt; spot[itr->first].rt = itr->second.rt; }
 			}
+			
+			world.barrier();
 		}
 		//map exchange part..
 		
@@ -385,7 +388,7 @@ int main(int argc, char *argv[])
 	{
 		for(int i=1; i<nps; ++i)
 		{
-			unsigned long int tmpA = 0;
+			long int tmpA = 0;
 			world.recv(i, 314, tmpA);
 			accu = accu + tmpA;
 		}
