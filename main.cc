@@ -2,10 +2,9 @@
 
 using namespace std;
 
-const int car_num = 16000;
-const double p_randomization= 0.15;
+const double p_randomization= 0.05;
 
-int main()
+int main(int argc, char *argv[])
 {
 	map<int, LR> spot;
 	map<int, LR>:: iterator spotitr;
@@ -16,70 +15,39 @@ int main()
 	
 	// session 4
 	cout<<"Map constructing..."<<endl;
-	int ewnum = 16;
-	int nsnum = 16;
+	int ewnum = 4;
+	int nsnum = 4;
 	int *ewrange = new int[ewnum]; 
 	int *nsrange = new int[nsnum];
 	for(int i=0; i<ewnum; ++i) {	ewrange[i] = 100 * i + 50;	}
 	for(int i=0; i<nsnum; ++i) {	nsrange[i] = 100 * i + 50;	}
 	
-	BOUND bound(1600, 0, 1600, 0, ewnum, nsnum, ewrange, nsrange);
+	BOUND bound(400, 0, 400, 0, ewnum, nsnum, ewrange, nsrange);
 			  //e,    w, n,    s, 
-	bound.Construct(spot, cross); // construct the map in this process..
+	int ewns[4] = {-1, -1, -1, -1};
+	bound.Construct(spot, cross, ewns); // construct the map in this process..
 	// session 4	
 	cout<<spot.size()<<" spots ("<<spot.size()*sizeof(spot)/1024<<"KB) and ";
 	cout<<cross.size()<<" road crosses ("<<cross.size()*sizeof(cross)/1024<<"KB) constructed for the map "<<endl<<endl;
 
 	cout<<"Cars constructing..."<<endl;
 	srand48(time(NULL));
-	for(int i=0; i < car_num; ++i) // constructing the cars in this process..
-	{
-		bool check = 1;
-		while(check) 
-		{
-			int x, y, drct;
-			if( i < car_num/2 )  // cars on ew road..
-			{
-				y = nsrange[ lrand48()%nsnum ];
-				x =	lrand48() % bound.Et();
-				double random = drand48();
-				if( random < 0.5 ) 	drct = EAST;
-				else				drct = WEST;
-			}
-			else // cars on ns road..
-			{
-				x = ewrange[ lrand48()%ewnum ];
-				y =	lrand48() % bound.Nt();
-				double random = drand48();
-				if( random < 0.5 ) 	drct = SOUTH;
-				else				drct = NORTH;
-			}
-		
-			spotitr = spot.find( XYtoKEY( x, y) );
-			if (spotitr != spot.end() )
-			{
-				CAR newcar(x, y, drct);
-				if ( !((newcar.DRCT()%2 == 0 && spotitr->second.rt == 1) || (newcar.DRCT()%2 == 1 && spotitr->second.lt == 1)) )
-				{
-					if ( newcar.DRCT()%2 == 0)  spotitr->second.rt = 1;  // go to north or east..
-					else                       	spotitr->second.lt = 1;	 // goto west or south.. 
-					
-					car.push_back(newcar);
-					check = 0;
-				}
-			}
-		}
-	}
+
+	int car_num = atoi(argv[1]);
+	cout<<car_num<<endl;
+	Add_Car(bound, car, ewnum, nsnum, car_num, spot);
+	
 	cout<<car.size()<<" cars ("<<car.size()*sizeof(car)/1024<<"KB) constructed on the map"<<endl<<endl;
 
-	int time_i = 0, time_max = 5;
+	int time_i = 0, time_max = 200;
+	long int accu = 0;
 	time_t start = time(NULL);
 	cout<<"Simulation Start!"<<endl;
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
-		ofstream file("plot_cars.dat");// session 3..
+		ofstream file("plot_cars.dat");// plot
 		
-		if ( time_i%10 == 0 ) Signal_Switch(cross);
+		if ( time_i%20 == 0 ) Signal_Switch(cross);
 		cout<<"At time "<<time_i<<" "<<endl;
 		
 		for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
@@ -90,8 +58,11 @@ int main()
 			if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
 			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
+			
+			accu = accu + abs( caritr->X() - newx ) + abs( caritr->Y() - newy );
+			
 			caritr->Move(newx, newy, newdrct, spot);
-			file<<caritr->X()<<" "<<caritr->Y()<<endl;
+			file<<caritr->X()<<" "<<caritr->Y()<<endl;   // plot
 		}
 		
 		{ // this is scope is for car delete from the map..
@@ -105,8 +76,7 @@ int main()
 			}
 			car.remove_if( check_del() );
 		}
-		// session 4..
-		file.close();
+		file.close();  // plot
 		
 		FILE *gp = popen("gnuplot -persist", "w");
    		if(gp == NULL)
@@ -121,16 +91,24 @@ int main()
 		fprintf(gp, "set title 'Time step %d, Total cars num: %zu'\n", time_i, car.size() );
 		fprintf(gp, "set xrange[%d: %d]\n", bound.Wt(), bound.Et() );
 		fprintf(gp, "set yrange[%d: %d]\n", bound.St(), bound.Nt() );
-		fprintf(gp, "plot 'plot_road.dat' u 1:2 title 'Road Spot' w points, 'plot_cars.dat' u 1:2 title 'Cars' w points\n");
+		fprintf(gp, "plot 'plot_cars.dat' u 1:2 title 'Cars' w points ps 2, 'plot_road.dat' u 1:2 title 'Road Spot' w points ps 1\n");
+		//fprintf(gp, "plot 'plot_road.dat' u 1:2 title 'Road Spot' w points, 'plot_cars.dat' u 1:2 title 'Cars' w points\n");
 		fclose(gp);
 		// session 4..
 	
 		time_t end = time(NULL);
 		cout<<end-start<<" seconds spent for this step"<<endl<<endl;
+		
 		time_i++;
-	}
 
+		if( (int)car.size() < car_num ) Add_Car(bound, car, ewnum, nsnum, car_num - car.size(), spot);
+		cout<<car.size()<<endl;
+	}
+	
 	system("convert -delay 25 -loop 0 *.png Moving.gif\n");	// session 4..
+	
+	double re = (double)accu/ (double)time_max/ (double)car_num ;
+	cout<<"Average movement in this test is: "<<re<<endl;
 	
 	return 0;
 }

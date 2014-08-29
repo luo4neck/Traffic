@@ -1,7 +1,10 @@
 // This file contains all hard definations
 #include<string>
+#include<string.h>
 #include<map>
 #include<list>
+#include<vector>
+#include<algorithm>
 #include<fstream>
 #include<iostream>
 #include<stdlib.h>
