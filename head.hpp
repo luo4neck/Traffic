@@ -476,9 +476,11 @@ void Add_Car(const BOUND &bound, list<class CAR> &car, const int ew, const int n
 	map<int, LR>::iterator sitr;	// iterator of spots..
 	for(int i=0; i<car_num/2; ++i)  // cars on e-w direction road..
 	{
+		int count=0;
 		bool check = 1;
-		while(check)
+		while(check && count<100)
 		{
+			count++;
 			int x, y, drct, length;
 			y = bound.NS_pnt( lrand48()%ns );
 			x = bound.Wt() + lrand48()% (bound.Et() - bound.Wt());
@@ -510,9 +512,11 @@ void Add_Car(const BOUND &bound, list<class CAR> &car, const int ew, const int n
 
 	for(int i = car_num/2; i<car_num; ++i)  // cars on n-s direction road..
 	{
+		int count=0;
 		bool check = 1;
-		while(check)
+		while(check && count<100)
 		{
+			count++;
 			int x, y, drct, length;
 			x = bound.EW_pnt( lrand48()%ew );
 			y = bound.St() + lrand48()% (bound.Nt() - bound.St());

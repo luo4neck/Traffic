@@ -247,7 +247,6 @@ int main(int argc, char *argv[])
 			bool rand = 1; // deal with the randomization..
 			if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
 			
-			//cout<<"rand "<<rand<<endl;
 			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
 			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
@@ -255,7 +254,7 @@ int main(int argc, char *argv[])
 			accu = accu + abs(newx - caritr->X() ) + abs(newy - caritr->Y() ); // accumulate all movements..
 			
 			caritr->Move(newx, newy, newdrct, spot);
-		
+			
 			if(nps != 1)
 			{
 				if( caritr->X() > bound.Et() ) // if come out of range.. set del to 1, add to send list..
@@ -372,7 +371,7 @@ int main(int argc, char *argv[])
 			}
 		//car exchange part..
 		}	
-	
+
 		if( (int)car.size() < car_num )	Add_Car(bound, car, ewnum, nsnum, car_num-car.size(), spot); 
 		// the number of deleted vehicle are added into the map..
 		
