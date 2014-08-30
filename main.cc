@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 	
 	cout<<car.size()<<" cars ("<<car.size()*sizeof(car)/1024<<"KB) constructed on the map"<<endl<<endl;
 
-	int time_i = 0, time_max = 200;
+	int time_i = 0, time_max = 300;
 	long int accu = 0;
 	time_t start = time(NULL);
 	cout<<"Simulation Start!"<<endl;
@@ -89,10 +89,9 @@ int main(int argc, char *argv[])
 		fprintf(gp, "set xlabel 'WEST <-                   -> EAST\n");
 		fprintf(gp, "set ylabel 'SOUTH <-                   -> NORTH\n");
 		fprintf(gp, "set title 'Time step %d, Total cars num: %zu'\n", time_i, car.size() );
-		fprintf(gp, "set xrange[%d: %d]\n", bound.Wt(), bound.Et() );
+		fprintf(gp, "set xrange[%d: %d]\n", bound.Wt(), bound.Et()+60 );
 		fprintf(gp, "set yrange[%d: %d]\n", bound.St(), bound.Nt() );
-		fprintf(gp, "plot 'plot_cars.dat' u 1:2 title 'Cars' w points ps 2, 'plot_road.dat' u 1:2 title 'Road Spot' w points ps 1\n");
-		//fprintf(gp, "plot 'plot_road.dat' u 1:2 title 'Road Spot' w points, 'plot_cars.dat' u 1:2 title 'Cars' w points\n");
+		fprintf(gp, "plot 'plot_road.dat' u 1:2 title 'Road Spot' w points ps 1 pt 3 lt 2, 'plot_cars.dat' u 1:2 title 'Cars' w points ps 1 lt 1\n");
 		fclose(gp);
 		// session 4..
 	
@@ -105,7 +104,7 @@ int main(int argc, char *argv[])
 		cout<<car.size()<<endl;
 	}
 	
-	system("convert -delay 25 -loop 0 *.png Moving.gif\n");	// session 4..
+	system("convert -delay 20 -loop 0 *.png Moving.gif\n");	// session 4..
 	
 	double re = (double)accu/ (double)time_max/ (double)car_num ;
 	cout<<"Average movement in this test is: "<<re<<endl;
