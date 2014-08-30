@@ -478,7 +478,7 @@ void Add_Car(const BOUND &bound, list<class CAR> &car, const int ew, const int n
 	{
 		int count=0;
 		bool check = 1;
-		while(check && count<100)
+		while(check && count<50)
 		{
 			count++;
 			int x, y, drct, length;
@@ -514,7 +514,7 @@ void Add_Car(const BOUND &bound, list<class CAR> &car, const int ew, const int n
 	{
 		int count=0;
 		bool check = 1;
-		while(check && count<100)
+		while(check && count<50)
 		{
 			count++;
 			int x, y, drct, length;
