@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 	}
 	
 	// map constructing part start here..
-	cout<<Bet<<" "<<Bwt<<" "<<Bnt<<" "<<Bst<<endl;
+	cout<<"Process "<<myid<<": E-"<<Bet<<" W-"<<Bwt<<" N-"<<Bnt<<" S-"<<Bst<<endl;
 	BOUND bound(Bet, Bwt, Bnt, Bst, ewnum, nsnum, ewrange, nsrange);
 	int ewns[4]; // to recv 4 boundary info, one array two usage..
 	for(int i=0; i<4; ++i)
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
 		cout<<"simulation start!"<<endl;
 	}
 	
-	int time_i = 0, time_max = 500; 
+	int time_i = 0, time_max = 600; 
 	long int accu = 0;
 	time_t start = time(NULL);
 	while(time_i < time_max ) // main loop.. one loop is one time step..
@@ -287,7 +287,6 @@ int main(int argc, char *argv[])
 		
 		for(caritr = car.begin(); caritr != car.end(); ++caritr)
 		{
-		//	cout<<"time: "<<time_i<<" in proc "<<myid<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->del<<" "<<caritr->path<<endl<<endl;
 			if (caritr->del == 1)
 			{
 				if(caritr->DRCT()%2 == 0 ) spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].rt = 0;
@@ -327,7 +326,6 @@ int main(int argc, char *argv[])
 			}
 		
 			boost::mpi::wait_all(req, req+8);	//waitall
-		//if(myid == 2) cout<<"time: "<<time_i<<" "<<ERCAR.size()<<" "<<WRCAR.size()<<" "<<NRCAR.size()<<" "<<SRCAR.size()<<endl;
 		
 			if( ewns[EAST]  >= 0 ) // move recieved cars into car..
 			{	
