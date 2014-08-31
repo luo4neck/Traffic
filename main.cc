@@ -56,7 +56,7 @@ int main()
 	{
 		ofstream file("plot_cars.dat");// session 3..
 		
-		if ( time_i%10 == 0 ) Signal_Switch(cross);
+		if ( time_i%20 == 0 ) Signal_Switch(cross);
 		cout<<"At time "<<time_i<<" "<<endl;
 
 		for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
@@ -94,15 +94,13 @@ int main()
 		}
 		fprintf(gp, "set terminal png\n");
 		fprintf(gp, "set output '%d.png'\n", time_i + 1000);
-		//fprintf(gp, "set font ',30'\n");
 		fprintf(gp, "set xlabel '<- WEST                               EAST ->\n");
 		fprintf(gp, "set ylabel '<- SOUTH                          NORTH ->\n");
-		fprintf(gp, "set title 'Time step %d, Total cars num: %zu'\n", time_i, car.size() );
+		fprintf(gp, "set title 'Time Step %d, Total Car Num: %zu'\n", time_i, car.size() );
 		fprintf(gp, "set xrange[%d: %d]\n", bound.Wt(), bound.Et() );
 		fprintf(gp, "set yrange[%d: %d]\n", bound.St(), bound.Nt() );
 		fprintf(gp, "plot 'plot_cars.dat' u 1:2 title 'Cars' w points, 'plot_road.dat' u 1:2 title 'Road Spot' w points\n");
 		fclose(gp);
-		// session 3..
 	
 		int congest_count = 0;
 		if ( Car_Add_Congest(0, 50, EAST, spot, car)) 	congest_count++;
