@@ -165,14 +165,16 @@ class CAR
 	private:
 	int x;
 	int y;
+	int id;
 	public:
 	bool del; // 0 is not to be deleted, 1 is to be deleted..
 	int drct;
 	string path;
 	
 	CAR() {} // default constructor..
-	CAR(int X, int Y, int DRCT, string PATH)
+	CAR(int X, int Y, int DRCT, string PATH, const int ID)
 	{
+		id = ID;
 		del = 0;
 		x = X;
 		y = Y;
@@ -187,10 +189,14 @@ class CAR
 	{	// simply serialize the data members of CAR..
 		ar &x;
 		ar &y;
+		ar &id;
 		ar &del;
 		ar &drct;
 		ar &path;
 	}
+
+	const int Id()
+	{ return id; }
 
 	const int X()
 	{ return x; }
@@ -291,6 +297,12 @@ class check_del
 	{	return car.del;	}
 };
 
+class Cmpare  
+{  
+	public:  
+	bool operator()(CAR car1, CAR car2) const
+	{ return car1.Id() < car2.Id();	}
+};  
 /*  upside is class CAR, down side is class BOUND */
 
 class BOUND
@@ -471,7 +483,7 @@ class BOUND
 };
 
 /*  upside is class BOUND, down side is car adding */
-
+/*
 void Add_Car(const BOUND &bound, list<class CAR> &car, const int ew, const int ns, const int car_num, map<int, LR> &spot)
 {
 	list<class CAR>::iterator citr;  // iterator of cars..
@@ -544,3 +556,4 @@ void Add_Car(const BOUND &bound, list<class CAR> &car, const int ew, const int n
 		}
 	}
 }
+*/

@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 		int base = 130;
 		for(int i=0; i<15; ++i)
 		{
-			CAR newcar(base + i, 80, EAST, PATH);
+			CAR newcar(base + i, 80, EAST, PATH, i);
 			car.push_back(newcar);
 			spot[XYtoKEY( base + i, 80 )].rt = 1;
 		}
@@ -99,8 +99,6 @@ int main(int argc, char *argv[])
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
 		world.barrier();
-		//if (myid == 0)	cout<<"At time "<<time_i<<" "<<endl;
-		//if ( time_i%10 == 0 ) Signal_Switch(cross);
 		
 		//map exchange part.. 
 		boost::mpi::request req[8];
@@ -170,9 +168,6 @@ int main(int argc, char *argv[])
 			bool rand = 1; // deal with the randomization..
 			if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
 			
-			//cout<<"rand "<<rand<<endl;
-			//cout<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del<<endl;
-			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
 			
 			{
@@ -183,72 +178,58 @@ int main(int argc, char *argv[])
 			
 			if( caritr->X() > bound.Et() ) // if come out of range.. set del to 1, add to send list..
 			{
-				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
+				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path, caritr->Id() );
 				ESCAR.push_back(newcar);
 				caritr->del = 1;
 			}
 			if( caritr->X() < bound.Wt() ) // if come out of range.. set del to 1, add to send list..
 			{
-				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
+				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path, caritr->Id() );
 				WSCAR.push_back(newcar);
 				caritr->del = 1;
 			}
 			if( caritr->Y() > bound.Nt() ) // if come out of range.. set del to 1, add to send list..
 			{
-				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
+				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path, caritr->Id() );
 				NSCAR.push_back(newcar);
 				caritr->del = 1;
 			}
 			if( caritr->Y() < bound.St() ) // if come out of range.. set del to 1, add to send list..
 			{
-				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path );
+				CAR newcar( caritr->X(), caritr->Y(), caritr->DRCT(), caritr->path, caritr->Id() );
 				SSCAR.push_back(newcar);
 				caritr->del = 1;
 			}
 		}  // end of car traverse..
 		
-		if (myid == 0 && time_i > 10 )
+		if (myid == 0 && time_i > 10 ) // ploting part..
 		{
-			vector<int> p0car;
-			for(caritr = car.begin(); caritr != car.end(); ++caritr)
-			{
-				p0car.push_back( caritr->X() );
-			}
-			world.send(1, 909, p0car);
+			world.send(1, 909, car);
 		}
+		else if (myid == 1 && time_i > 10 )
+		{
+			list<class CAR> tmpcar;
+			list<class CAR> recvcar;
+			tmpcar = car;
+			world.recv(0, 909, recvcar);
+			
+			tmpcar.splice(tmpcar.begin(), recvcar);
+			tmpcar.sort( Cmpare() );
 
-		if ( myid == 1 && time_i > 10 ) file<<time_i<<" ";
-		cout<<"time "<<time_i<<": ";
-		for(caritr = car.begin(); caritr != car.end(); ++caritr)
-		{
-			if( myid == 1 && time_i > 10 )
+			list<class CAR>::iterator itr;
+			
+			file<<time_i<<" ";
+			for(itr = tmpcar.begin(); itr != tmpcar.end(); ++itr)
 			{
-				file<<caritr->X()<<" ";
-			}
-			cout<<caritr->X()<<", ";
-			if (caritr->del == 1)
-			{
-				if(caritr->DRCT()%2 == 0 ) spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].rt = 0;
-				else					   spot[ XYtoKEY( caritr->X(), caritr->Y() ) ].lt = 0;
-			}
-		}
-		if ( myid == 1 && time_i > 10 ) 
-		{
-			vector<int> prcv;
-			vector<int>:: iterator itr;
-			world.recv(0, 909, prcv);
-			for( itr = prcv.begin(); itr != prcv.end(); ++itr )
-			{
-				file<<*itr<<" ";
+				file<<itr->X()<<" ";
+				cout<<itr->Id()<<" "<<itr->X()<<endl;
 			}
 			file<<endl;
-		}
-		cout<<endl;
-
+		} // ploting part..
+		
 		car.remove_if( check_del() );
 		if(myid == 0 ) cout<<endl;
 		world.barrier();
-		//sleep(1);
 		
 		//car exchange part..
 		list<class CAR> ERCAR, WRCAR, NRCAR, SRCAR; // list of cars recved from e w n s..
