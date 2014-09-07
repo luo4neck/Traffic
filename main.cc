@@ -222,13 +222,13 @@ int main(int argc, char *argv[])
 			for(itr = tmpcar.begin(); itr != tmpcar.end(); ++itr)
 			{
 				file<<itr->X()<<" ";
-				cout<<itr->Id()<<" "<<itr->X()<<endl;
+			//	cout<<itr->Id()<<" "<<itr->X()<<endl;
 			}
 			file<<endl;
 		} // ploting part..
 		
 		car.remove_if( check_del() );
-		if(myid == 0 ) cout<<endl;
+//		if(myid == 0 ) cout<<endl;
 		world.barrier();
 		
 		//car exchange part..

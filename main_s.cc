@@ -89,11 +89,11 @@ int main(int argc, char *argv[])
 			for(caritr = car.begin(); caritr!=car.end(); ++caritr)  // traverse of cars..
 			{
 				//cout<<"time "<<time_i<<": "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->path<<endl;
-				cout<<"time "<<time_i<<": "<<caritr->X()<<" "<<caritr->DRCT()<<" "<<endl;
+			//	cout<<"time "<<time_i<<": "<<caritr->X()<<" "<<caritr->DRCT()<<" "<<endl;
 				file<<caritr->X()<<" ";
 			}
 			file<<endl;
-			cout<<endl;
+		//	cout<<endl;
 		}
 		time_i++;
 	}
