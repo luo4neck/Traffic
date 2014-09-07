@@ -400,7 +400,7 @@ class BOUND
 
 	void Construct(map<int, LR> &spot, map<int, CROSS> &cross, int ewns[4])
 	{
-		ofstream file("plot_road.dat"); //session 3..
+//		ofstream file("plot_road.dat"); //session 3..
 		// cross part..
 		for(int i=0; i<EWnum; ++i)
 		{
@@ -409,7 +409,7 @@ class BOUND
 				int x = EWpnt[i];
 				int y = NSpnt[j];
 				
-				file<<x<<" "<<y<<endl;
+		//		file<<x<<" "<<y<<endl;
 
 				CROSS crs;
 				crs.NSred = 1;
@@ -441,7 +441,7 @@ class BOUND
 					space.rt = 0;
 					spot.insert(pair<int, LR> ( XYtoKEY(x, y) , space));
 				}
-				file<<x<<" "<<y<<endl;
+		//		file<<x<<" "<<y<<endl;
 	//			cout<<x<<" "<<y<<endl;//session 3..;
 			}
 		}
@@ -466,10 +466,10 @@ class BOUND
 					space.rt = 0;
 					spot.insert(pair<int, LR> ( XYtoKEY(x, y) , space));
 				}
-				file<<x<<" "<<y<<endl;//session 3..;
+		//		file<<x<<" "<<y<<endl;//session 3..;
 			}
 		}
-		file.close();
+		//file.close();
 	} // end of construct..
 
 };
