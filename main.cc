@@ -261,12 +261,9 @@ int main(int argc, char *argv[])
 		cout<<"simulation start!"<<endl;
 	}
 	int time_i = 0, time_max = 1000, den = 0, flow = 0;
-	time_t start = time(NULL);
+	//time_t start = time(NULL);
 	while(time_i < time_max ) // main loop.. one loop is one time step..
 	{
-		//if ( time_i%20 == 0 ) Signal_Switch(cross);
-		//cross initialize function in head.hpp is also changed..
-		//if (myid == 0)	cout<<"At time "<<time_i<<" "<<endl;
 		
 		if( nps != 1 )
 		{
@@ -342,9 +339,6 @@ int main(int argc, char *argv[])
 			int newx(0), newy(0), newdrct(0);
 			bool rand = 1; // deal with the randomization..
 			if ( drand48() < p_randomization ) rand = 0; // 0 is do randomization..
-			
-			//cout<<"rand "<<rand<<endl;
-			//if(myid == 3)cout<<"P: "<<myid<<" "<<caritr->X()<<" "<<caritr->Y()<<" "<<caritr->DRCT()<<" "<<caritr->del;
 			
 			caritr->space_detect(rand, newx, newy, newdrct, spot, cross, turn);
 			
@@ -471,9 +465,6 @@ int main(int argc, char *argv[])
 		//car exchange part..
 		}	
 	
-		//if( (int)car.size() < car_num )	Add_Car(bound, car, ewnum, nsnum, car_num-car.size(), spot); 
-		// the number of deleted vehicle are added into the map..
-		
 		{// density test..
 			spotitr = spot.find( XYtoKEY( 35, 90 ) );
 			if (spotitr != spot.end() && spotitr->second.rt == 1 ){	den++;	}
@@ -483,7 +474,7 @@ int main(int argc, char *argv[])
 			
 		if(myid == 0) 
 		{
-			time_t end = time(NULL);
+			//time_t end = time(NULL);
 		//	cout<<end-start<<" seconds spent for this step"<<endl<<endl;
 		}
 		time_i++;
@@ -495,10 +486,10 @@ int main(int argc, char *argv[])
 		double den_p = (double)den / (double)time_max;
 		cout<<"flow: "<<flow_p<<", density: "<<den_p<<" "<<car.size()<<endl;
 	}
-	if( nps != 1 )
+/*	if( nps != 1 )
 	{
 		cout<<myid<<" "<<car.size()<<endl;
-	}
+	}*/
 
 	return 0;
 }

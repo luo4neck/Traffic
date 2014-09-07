@@ -8,9 +8,9 @@ main.o: main.cc head.hpp def.hpp
 
 test4: all 
 	mpirun -n 4 ./main -v 100 -f map2.dat
-
-test1: all 
 	mpirun -n 1 ./main -v 100 -f map2.dat
+
+#test1: all 
 
 clean:
 	rm *.o main
