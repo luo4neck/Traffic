@@ -10,5 +10,8 @@ test1: all
 test2: all 
 	mpirun -n 16 ./main -v 10000 -f maplarge.dat
 
+test3: all 
+	mpirun -n 1 ./main -v 100 -f map4.dat
+
 clean:
 	rm *.o main

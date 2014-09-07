@@ -13,7 +13,8 @@ void Wrong()
 void Input_Check(const int nps, int argc, char *argv[], int &car_num, int &N_max, int &E_max, vector<int> &EWRANGE, vector<int> &NSRANGE)
 // this function will be used to check all input variables..
 {	
-	if (nps != 1 && nps != 4 && nps != 16 && nps != 64)
+	//if (nps != 1 && nps != 4 && nps != 16 && nps != 64)
+	if (nps != 4 && nps != 16 && nps != 64)
 	{
 		cout<<"Number of process is wrong!"<<endl;
 		Wrong();
